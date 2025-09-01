@@ -74,13 +74,18 @@ will output
 ```
 Your BQL query is:
 
-SELECT account, sum(position) as balance WHERE account ~ 'cash'
+SELECT account, sum(position) GROUP BY account ORDER BY account ASC
 
-+--------------------------+------------+
-| Account                  |    Balance |
-|--------------------------+------------|
-| Assets:Cash:Pocket-Money | -20.00 EUR |
-+--------------------------+------------+
++--------------------------+---------------+
+| Account                  |       Balance |
+|--------------------------+---------------|
+| Assets:Bank:Checking     |  1,900.00 EUR |
+| Assets:Cash:Pocket-Money |    -20.00 EUR |
+| Equity:Opening-Balances  | -1,000.00 EUR |
+| Expenses:Food            |    100.00 EUR |
+| Expenses:Sweets          |     20.00 EUR |
+| Income:Salary            | -1,000.00 EUR |
++--------------------------+---------------+
 ```
 
 ## Register
