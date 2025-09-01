@@ -12,6 +12,8 @@ If anything is unclear at any point, ask the user to provide answers and guidanc
 Try to write clean code. Use well-knows Python standards and conventions.
 When creating new features, re-use existing code and write new code into reusable modules.
 
+Create tests first, before applying new functionality. Then run them after implementation, to confirm the functionality works as expected.
+
 # Running Python
 To run Python scripts, use `uv`:
 ```sh

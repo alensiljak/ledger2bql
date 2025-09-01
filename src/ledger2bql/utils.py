@@ -69,9 +69,6 @@ def execute_bql_command(create_parser_func, parse_query_func, format_output_func
 
     query = parse_query_func(args)
 
-    # Print the BQL query
-    print(f"\nYour BQL query is:\n\n{query}\n")
-
     output = run_bql_query(query, book)
 
     # Pass kwargs to format_output_func
@@ -80,6 +77,9 @@ def execute_bql_command(create_parser_func, parse_query_func, format_output_func
     if not formatted_output: # Handle empty output
         print("No records found.")
         return
+
+    # Print the BQL query
+    print(f"\nYour BQL query is:\n\n{query}\n")
 
     # Determine headers and alignments for the table based on args
     if hasattr(args, 'total') and args.total:

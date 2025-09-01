@@ -86,20 +86,10 @@ def parse_query(args):
 
     # Build the final query
     select_clause = "SELECT account, sum(position) as balance"
-    if group_by_clauses:
-        select_clause = "SELECT account, level(account), balance"
-
     query = select_clause
 
     if where_clauses:
         query += " WHERE " + " AND ".join(where_clauses)
-    
-    if group_by_clauses:
-        query += " GROUP BY " + ", ".join(group_by_clauses)
-
-    
-
-    
 
     return query
 
@@ -133,6 +123,22 @@ def format_output(output: list, args) -> list:
         new_row = list(row)
         new_row[-1] = formatted_balance
         formatted_output.append(tuple(new_row))
+
+    # Handle sorting
+    if args.sort:
+        # Assuming args.sort can be 'account' or 'balance'
+        # For 'account', sort by the first element of the tuple (account name)
+        # For 'balance', sort by the numeric value of the balance
+        if args.sort == 'account':
+            formatted_output.sort(key=lambda x: x[0])
+        elif args.sort == 'balance':
+            # Need to extract the numeric value from the formatted balance string
+            # This is a bit fragile, assuming format is "X.XX CUR"
+            formatted_output.sort(key=lambda x: float(x[1].split(' ')[0].replace(',', '')))
+    else:
+        # Default sort by account
+        formatted_output.sort(key=lambda x: x[0])
+
     return formatted_output
 
 

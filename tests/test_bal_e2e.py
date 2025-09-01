@@ -166,3 +166,37 @@ def test_bal_gratis_empty_account(mock_getenv):
     # Assert
     assert "No records found." in output_with_z
     assert "Assets:Cash:Wallet" not in output_with_z
+
+
+@patch('os.getenv')
+def test_bal_sort_account(mock_getenv):
+    # Arrange
+    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+
+    f = io.StringIO()
+    with redirect_stdout(f):
+        with patch('sys.argv', ['bal', '--sort', 'account']):
+            # Act
+            bal_main()
+    output = f.getvalue()
+
+    # Assert: Check if the accounts are sorted alphabetically
+    expected_order = [
+        "Assets:Bank:Checking",
+        "Assets:Cash:Pocket-Money",
+        "Equity:Opening-Balances",
+        "Expenses:Food",
+        "Expenses:Sweets",
+        "Income:Salary"
+    ]
+    
+    # Extract account names from the output and check their order
+    output_lines = output.splitlines()
+    found_accounts = []
+    for account in expected_order:
+        for line in output_lines:
+            if account in line:
+                found_accounts.append(account)
+                break
+    
+    assert found_accounts == expected_order
