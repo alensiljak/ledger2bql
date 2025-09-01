@@ -14,6 +14,7 @@ The purpose of this project, a simple CLI utility, is to accept a Ledger-like sy
 # Development
 
 ## Setup
+Clone the repository.
 Add an `.env` file, specifying the `BEANCOUNT_FILE` location.
 ```
 BEANCOUNT_FILE=tests/sample_ledger.bean
@@ -38,7 +39,15 @@ l ...
 ```
 # Usage
 
+Install the package:
+```sh
+uv pip install ledger2bql
+# or
+uv tool install ledger2bql
+```
+
 Set the `BEANCOUNT_FILE` variable to point to your Beancount ledger file.
+You can create an .env file, to customize different ledgers for different folders.
 
 Run
 ```sh
@@ -51,4 +60,23 @@ To get the list of available parameters, simply run
 ledger2bql
 ledger2bql bal --help
 ledger2bql reg --help
+```
+
+## Example
+
+Running
+```sh
+l b cash
+```
+will output
+```
+Your BQL query is:
+
+SELECT account, sum(position) as balance WHERE account ~ 'cash'
+
++--------------------------+------------+
+| Account                  |    Balance |
+|--------------------------+------------|
+| Assets:Cash:Pocket-Money | -20.00 EUR |
++--------------------------+------------+
 ```
