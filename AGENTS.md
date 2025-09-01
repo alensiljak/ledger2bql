@@ -18,6 +18,8 @@ To run Python scripts, use `uv`:
 uv run python <script>
 ```
 
+Note that changing environment variables happens through modification of the .env file.
+
 # Tests
 To run tests, also run with `uv`:
 ```sh

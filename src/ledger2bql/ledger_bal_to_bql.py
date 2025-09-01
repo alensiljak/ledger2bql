@@ -77,6 +77,10 @@ def create_parser():
         type=int,
         help="Limit the number of results."
     )
+    parser.add_argument(
+        '--sort',
+        help="Sort the results by a specified column (e.g., account, balance)."
+    )
 
     return parser
 
@@ -123,10 +127,15 @@ def parse_query():
     if group_by_clauses:
         query += " GROUP BY " + ", ".join(group_by_clauses)
 
+    # Handle sorting
+    if args.sort:
+        query += f" ORDER BY {args.sort}"
+    else:
+        query += " ORDER BY account"
+
     print(f"\nYour BQL query is:\n\n{query}\n")
 
     return query, args
-
 
 def run_bql_query(query: str, book: str) -> list:
     '''
@@ -182,6 +191,7 @@ def main():
 
     query, args = parse_query()
     output = run_bql_query(query, BEANCOUNT_FILE)
+    print("Raw BQL output:", output)
     
     # Format the output to remove the parentheses
     formatted_output = format_output(output)
