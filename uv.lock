@@ -79,7 +79,7 @@ wheels = [
 
 [[package]]
 name = "ledger2bql"
-version = "0.4.4"
+version = "0.4.5"
 source = { editable = "." }
 dependencies = [
     { name = "beanquery" },

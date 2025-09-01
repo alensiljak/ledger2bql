@@ -3,6 +3,8 @@ Translate Ledger CLI query syntax into BQL
 
 Implemented in Python.
 
+The package is available at https://pypi.org/project/ledger2bql/.
+
 # Introduction
 
 BQL is quite a powerful language for slicing and dicing Beancount data. But, when all you need are simple queries, writing every field and filter seems tedios. In comparison, Ledger CLI's syntax is short and efficient. A simple `l b bank` will list all bank accounts, assuming a well-organized account tree.
