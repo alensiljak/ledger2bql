@@ -3,7 +3,9 @@ name = "ledger2bql"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-authors = [{ name='Alen Šiljak' }]
+authors = [
+  { name='Alen Šiljak' }
+]
 requires-python = ">=3.13"
 dependencies = [
     "beanquery>=0.2.0",
@@ -13,6 +15,9 @@ dependencies = [
 
 [project.scripts]
 ledger2bql = "ledger2bql.main:main"
+
+[project.urls]
+Repository = 'https://github.com/alensiljak/ledger2bql'
 
 [dependency-groups]
 dev = [

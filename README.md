@@ -28,3 +28,6 @@ or run
 ```sh
 l ...
 ```
+# User Setup
+
+Set the `BEANCOUNT_FILE` variable to point to your Beancount ledger file.

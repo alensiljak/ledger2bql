@@ -10,31 +10,6 @@
         "@modelcontextprotocol/server-filesystem",
         "x:\\pim\\beans"
       ]
-    },
-    "playwright": {
-      "command": "npx",
-      "args": [
-        "@playwright/mcp@latest",
-        "--browser",
-        "chrome",
-        "--executable-path",
-        "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe"
-      ]
-    },
-    "Beanquery MCP": {
-      "command": "uv",
-      "args": [
-        "run",
-        "--with",
-        "beancount",
-        "--with",
-        "beanquery",
-        "--with",
-        "mcp[cli]",
-        "mcp",
-        "run",
-        "D:\\src\\beanquery-mcp\\server.py"
-      ]
     }
   }
 }
