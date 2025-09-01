@@ -3,5 +3,36 @@ name = "ledger2bql"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
+authors = [{ name='Alen Šiljak' }]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "beanquery>=0.2.0",
+    "dotenv>=0.9.9",
+    "tabulate>=0.9.0",
+]
+
+[project.scripts]
+ledger2bql = "ledger2bql.main:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+]
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "src"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src"
+]
+
+[tool.hatch.build.targets.wheel]
+# Include the package subfolder in the distribution package.
+packages = ["src/ledger2bql"]
