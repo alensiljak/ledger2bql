@@ -163,7 +163,7 @@ def format_output(output: list) -> list:
                 currency_str = currency
 
             # Correctly access the number from the Position object's `units`
-            formatted_value = f"{amount.units.number.normalize():,f}"
+            formatted_value = "{:,.2f}".format(amount.units.number)
             
             formatted_balance += f"{formatted_value} {currency_str}"
         

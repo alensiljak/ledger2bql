@@ -152,10 +152,10 @@ def format_output(output: list, show_total: bool) -> list:
         running_total[transaction_currency] += transaction_amount
 
         # Format the transaction amount
-        formatted_transaction_amount = f"{transaction_amount:,f} {transaction_currency}"
+        formatted_transaction_amount = "{:,.2f} {}".format(transaction_amount, transaction_currency)
         
         # Format the running total
-        formatted_running_total = f"{running_total[transaction_currency]:,f} {transaction_currency}"
+        formatted_running_total = "{:,.2f} {}".format(running_total[transaction_currency], transaction_currency)
         
         # Assemble the row
         new_row = [
