@@ -34,6 +34,7 @@ import sys
 from dotenv import load_dotenv
 from decimal import Decimal
 from collections import defaultdict
+from .date_parser import parse_date
 # You will need to install the tabulate library for pretty-printing:
 # pip install tabulate
 from tabulate import tabulate
@@ -96,9 +97,11 @@ def parse_query():
 
     # Handle date ranges
     if args.begin:
-        where_clauses.append(f'date >= date("{args.begin}")')
+        begin_date = parse_date(args.begin)
+        where_clauses.append(f'date >= date("{begin_date}")')
     if args.end:
-        where_clauses.append(f'date < date("{args.end}")')
+        end_date = parse_date(args.end)
+        where_clauses.append(f'date < date("{end_date}")')
 
     # Build the final query
     select_clause = "SELECT date, account, payee, narration, position"
