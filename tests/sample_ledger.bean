@@ -1,11 +1,28 @@
 ; Sample ledger for tests
 
 ; accounts
+2025-01-01 open Assets:Bank:Checking EUR
 1900-01-01 open Assets:Cash:Pocket-Money
+2025-01-01 open Equity:Opening-Balances EUR
+1900-01-01 open Income:Salary
+; expenses
+1900-01-01 open Expenses:Food
 1900-01-01 open Expenses:Sweets
 
 ; transactions
 
+2025-01-01 * "Initial Balance"
+  Assets:Bank:Checking  1000 EUR
+  Equity:Opening-Balances  -1000 EUR
+
 2025-02-01 txn "Ice Cream Shop" "Ice Cream"
   Expenses:Sweets  20 EUR
   Assets:Cash:Pocket-Money
+
+2025-03-01 txn "Grocery Store" "Groceries"
+  Expenses:Food  100 EUR
+  Assets:Bank:Checking
+
+2025-03-15 txn "Employer" "Salary"
+  Assets:Bank:Checking  1000 EUR
+  Income:Salary  -1000 EUR
