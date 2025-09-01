@@ -9,7 +9,7 @@ BQL is quite a powerful language for slicing and dicing Beancount data. But, whe
 
 The purpose of this project, a simple CLI utility, is to accept a Ledger-like syntax, generate an appropriate BQL statement, and run it for you.
 
-# Dev Setup
+# Development
 
 ```sh
 uv sync
@@ -28,6 +28,19 @@ or run
 ```sh
 l ...
 ```
-# User Setup
+# Usage
 
 Set the `BEANCOUNT_FILE` variable to point to your Beancount ledger file.
+
+Run
+```sh
+ledger2bql b card
+ledger2bql r card -b 2025-08-01
+```
+
+To get the list of available parameters, simply run
+```sh
+ledger2bql
+ledger2bql bal --help
+ledger2bql reg --help
+```
