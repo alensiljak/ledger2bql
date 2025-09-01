@@ -30,10 +30,8 @@ Key Mappings:
 """
 
 import argparse
-import os
 from .date_parser import parse_date
-from tabulate import tabulate
-import beanquery
+from .utils import add_common_arguments, execute_bql_command
 
 
 def create_parser():
@@ -47,12 +45,8 @@ def create_parser():
         """
     )
 
-    parser.add_argument(
-        'account_regex',
-        nargs='*', # Changed to accept multiple arguments
-        default=None,
-        help="Regular expression(s) to filter accounts."
-    )
+    add_common_arguments(parser)
+
     parser.add_argument(
         '--depth', '-d',
         type=int,
@@ -63,42 +57,20 @@ def create_parser():
         action='store_true',
         help="Exclude accounts with a zero balance."
     )
-    parser.add_argument(
-        '--begin', '-b',
-        help="Transactions on or after this date. Format: YYYY-MM-DD."
-    )
-    parser.add_argument(
-        '--end', '-e',
-        help="Transactions strictly before this date. Format: YYYY-MM-DD."
-    )
-
-    parser.add_argument(
-        '--limit',
-        type=int,
-        help="Limit the number of results."
-    )
-    parser.add_argument(
-        '--sort',
-        help="Sort the results by a specified column (e.g., account, balance)."
-    )
 
     return parser
 
 
-def parse_query():
+def parse_query(args):
     '''Parse Ledger query into BQL'''
-    parser = create_parser()
-    args = parser.parse_args()
-
     where_clauses = []
     group_by_clauses = []
 
-    # 1. Handle account regular expression (now supports multiple)
+    # Handle common arguments
     if args.account_regex:
         for regex in args.account_regex:
             where_clauses.append(f"account ~ '{regex}'")
 
-    # 2. Handle date ranges
     if args.begin:
         begin_date = parse_date(args.begin)
         where_clauses.append(f'date >= "{begin_date}"')
@@ -106,11 +78,9 @@ def parse_query():
         end_date = parse_date(args.end)
         where_clauses.append(f'date < "{end_date}"')
 
-    # 3. Handle zero balance filtering
-    if args.zero:
-        where_clauses.append("balance != 0")
+    # Handle zero balance filtering
 
-    # 4. Handle depth
+    # Handle depth
     if args.depth:
         group_by_clauses.append(f"level(account) <= {args.depth}")
 
@@ -127,36 +97,20 @@ def parse_query():
     if group_by_clauses:
         query += " GROUP BY " + ", ".join(group_by_clauses)
 
-    # Handle sorting
-    if args.sort:
-        query += f" ORDER BY {args.sort}"
-    else:
-        query += " ORDER BY account"
+    
 
-    print(f"\nYour BQL query is:\n\n{query}\n")
+    
 
-    return query, args
-
-def run_bql_query(query: str, book: str) -> list:
-    '''
-    Run the BQL query and return results
-    book: Path to beancount file.
-    '''
-    # Create the connection. Pre-load the beanquery data.
-    connection = beanquery.connect("beancount:" + book)
-
-    # Run the query
-    cursor = connection.execute(query)
-    result = cursor.fetchall()
-
-    return result
+    return query
 
 
-def format_output(output: list) -> list:
+def format_output(output: list, args) -> list:
     """Formats the raw output from the BQL query into a pretty-printable list."""
     formatted_output = []
     for row in output:
         if not row:
+            continue
+        if args.zero and row[-1].is_empty():
             continue
         # The balance is always the last element in the row tuple
         balance_inventory = row[-1]
@@ -184,34 +138,12 @@ def format_output(output: list) -> list:
 
 def main():
     """Runs the given query and prints the output in a pretty format."""
-    # Get environment variables
-    BEANCOUNT_FILE = os.getenv("BEANCOUNT_FILE")
-    if not BEANCOUNT_FILE:
-        raise Exception('Beancount file not set.')
-
-    query, args = parse_query()
-    output = run_bql_query(query, BEANCOUNT_FILE)
-    # print("Raw BQL output:", output)
-    
-    # Format the output to remove the parentheses
-    formatted_output = format_output(output)
-
-    if args.limit:
-        formatted_output = formatted_output[:args.limit]
-
     # Determine headers for the table
     headers = ["Account", "Balance"]
     alignments = ["left", "right"]
-    if args.depth:
-        headers = ["Account", "Level", "Balance"]
-        alignments = ["left", "left", "right"]
-
-    # Pretty-print the results
-    print("Query Results:")
-    if formatted_output:
-        print(tabulate(formatted_output, headers=headers, tablefmt="psql", colalign=alignments))
-    else:
-        print("No records found.")
+    
+    # Pass args.depth to format_output_func via kwargs
+    execute_bql_command(create_parser, parse_query, format_output, headers, alignments)
 
 
 if __name__ == '__main__':

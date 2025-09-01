@@ -29,11 +29,10 @@ Key Mappings:
 """
 
 import argparse
-import os
 from decimal import Decimal
 from collections import defaultdict
 from .date_parser import parse_date
-from tabulate import tabulate
+from .utils import add_common_arguments, execute_bql_command
 
 
 def create_parser():
@@ -46,43 +45,17 @@ def create_parser():
         supported for consistency but has no effect on the BQL output.
         """
     )
-    parser.add_argument(
-        'account_regex',
-        nargs='*',
-        default=None,
-        help="Regular expression(s) to filter accounts."
-    )
-    parser.add_argument(
-        '--begin', '-b',
-        help="Transactions on or after this date. Format: YYYY-MM-DD."
-    )
-    parser.add_argument(
-        '--end', '-e',
-        help="Transactions strictly before this date. Format: YYYY-MM-DD."
-    )
+    add_common_arguments(parser)
     parser.add_argument(
         '--total', '-t',
         action='store_true',
-        help="Calculate and display a running total."
-    )
-    parser.add_argument(
-        '--sort', '-S',
-        type=str,
-        default='date, account',
-        help="Sort the results by the given comma-separated fields. Prefix with - for descending order."
-    )
-    parser.add_argument(
-        '--limit',
-        type=int,
-        help="Limit the number of results."
+        help="Calculate and display a running total.",
+        default=False
     )
     return parser
 
 
-def parse_query():
-    """Parse Ledger register command into BQL components."""
-    parser = create_parser()
-    args = parser.parse_args()
+def parse_query(args):
 
     where_clauses = []
     
@@ -117,23 +90,12 @@ def parse_query():
                 sort_keys.append(key)
         query += " ORDER BY " + ", ".join(sort_keys)
     
-    print(f"\nYour BQL query is:\n\n{query}\n")
+    
 
-    return query, args
+    return query
 
 
-def run_bql_query(query: str, book: str) -> list:
-    """Run the BQL query and return results."""
-    import beanquery
 
-    # Create the connection.
-    connection = beanquery.connect("beancount:" + book)
-
-    # Run the query
-    cursor = connection.execute(query)
-    result = cursor.fetchall()
-
-    return result
 
 
 def format_output(output: list, show_total: bool) -> list:
@@ -176,32 +138,17 @@ def format_output(output: list, show_total: bool) -> list:
 
 def main():
     """Runs the given query and prints the output in a pretty format."""
-    BEANCOUNT_FILE = os.getenv("BEANCOUNT_FILE")
-    if not BEANCOUNT_FILE:
-        raise Exception('Beancount file not set.')
-
-    query, args = parse_query()
-    output = run_bql_query(query, BEANCOUNT_FILE)
-    
-    formatted_output = format_output(output, args.total)
-
-    if args.limit:
-        formatted_output = formatted_output[:args.limit]
+    def format_output_with_args(output, args):
+        formatted = format_output(output, args.total)
+        if args.limit:
+            formatted = formatted[:args.limit]
+        return formatted
 
     # Determine headers and alignments for the table
     headers = ["Date", "Account", "Payee", "Narration", "Amount"]
     alignments = ["left", "left", "left", "left", "right"]
 
-    if args.total:
-        headers.append("Running Total")
-        alignments.append("right")
-
-    # Pretty-print the results
-    print("Query Results:")
-    if formatted_output:
-        print(tabulate(formatted_output, headers=headers, tablefmt="psql", colalign=alignments))
-    else:
-        print("No records found.")
+    execute_bql_command(create_parser, parse_query, format_output_with_args, headers, alignments)
 
 
 if __name__ == '__main__':
