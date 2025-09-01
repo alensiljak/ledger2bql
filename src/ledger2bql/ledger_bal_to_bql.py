@@ -147,6 +147,8 @@ def format_output(output: list) -> list:
     """Formats the raw output from the BQL query into a pretty-printable list."""
     formatted_output = []
     for row in output:
+        if not row:
+            continue
         # The balance is always the last element in the row tuple
         balance_inventory = row[-1]
         
@@ -196,7 +198,10 @@ def main():
 
     # Pretty-print the results
     print("Query Results:")
-    print(tabulate(formatted_output, headers=headers, tablefmt="psql", colalign=alignments))
+    if formatted_output:
+        print(tabulate(formatted_output, headers=headers, tablefmt="psql", colalign=alignments))
+    else:
+        print("No records found.")
 
 
 if __name__ == '__main__':

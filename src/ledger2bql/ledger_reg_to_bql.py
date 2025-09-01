@@ -30,13 +30,9 @@ Key Mappings:
 
 import argparse
 import os
-import sys
-from dotenv import load_dotenv
 from decimal import Decimal
 from collections import defaultdict
 from .date_parser import parse_date
-# You will need to install the tabulate library for pretty-printing:
-# pip install tabulate
 from tabulate import tabulate
 
 
@@ -180,7 +176,6 @@ def format_output(output: list, show_total: bool) -> list:
 
 def main():
     """Runs the given query and prints the output in a pretty format."""
-    load_dotenv()
     BEANCOUNT_FILE = os.getenv("BEANCOUNT_FILE")
     if not BEANCOUNT_FILE:
         raise Exception('Beancount file not set.')
@@ -203,7 +198,10 @@ def main():
 
     # Pretty-print the results
     print("Query Results:")
-    print(tabulate(formatted_output, headers=headers, tablefmt="psql", colalign=alignments))
+    if formatted_output:
+        print(tabulate(formatted_output, headers=headers, tablefmt="psql", colalign=alignments))
+    else:
+        print("No records found.")
 
 
 if __name__ == '__main__':
