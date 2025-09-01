@@ -191,7 +191,7 @@ def main():
 
     query, args = parse_query()
     output = run_bql_query(query, BEANCOUNT_FILE)
-    print("Raw BQL output:", output)
+    # print("Raw BQL output:", output)
     
     # Format the output to remove the parentheses
     formatted_output = format_output(output)
