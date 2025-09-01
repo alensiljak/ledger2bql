@@ -80,16 +80,33 @@ def parse_query(args):
 
     # Handle zero balance filtering
 
-    # Handle depth
-    if args.depth:
-        group_by_clauses.append(f"level(account) <= {args.depth}")
-
     # Build the final query
-    select_clause = "SELECT account, sum(position) as balance"
+    select_clause = "SELECT account, sum(position)"
     query = select_clause
 
     if where_clauses:
         query += " WHERE " + " AND ".join(where_clauses)
+
+    # Always group by account when summing positions
+    group_by_clauses.append("account")
+
+    if group_by_clauses:
+        query += " GROUP BY " + ", ".join(group_by_clauses)
+
+    if args.sort:
+        sort_fields = []
+        for field in args.sort.split(','):
+            field = field.strip()
+            sort_order = "ASC"
+            if field.startswith('-'):
+                field = field[1:]
+                sort_order = "DESC"
+            
+            if field == "balance":
+                sort_fields.append(f"sum(position) {sort_order}")
+            else:
+                sort_fields.append(f"{field} {sort_order}")
+        query += " ORDER BY " + ", ".join(sort_fields)
 
     return query
 
@@ -97,9 +114,16 @@ def parse_query(args):
 def format_output(output: list, args) -> list:
     """Formats the raw output from the BQL query into a pretty-printable list."""
     formatted_output = []
-    for row in output:
+    for row in list(output): # Ensure output is a list of lists
         if not row:
             continue
+        
+        account_name = row[0]
+        account_depth = account_name.count(':') + 1 # Calculate depth based on colons
+
+        if args.depth and account_depth > args.depth:
+            continue
+
         if args.zero and row[-1].is_empty():
             continue
         # The balance is always the last element in the row tuple
@@ -124,20 +148,7 @@ def format_output(output: list, args) -> list:
         new_row[-1] = formatted_balance
         formatted_output.append(tuple(new_row))
 
-    # Handle sorting
-    if args.sort:
-        # Assuming args.sort can be 'account' or 'balance'
-        # For 'account', sort by the first element of the tuple (account name)
-        # For 'balance', sort by the numeric value of the balance
-        if args.sort == 'account':
-            formatted_output.sort(key=lambda x: x[0])
-        elif args.sort == 'balance':
-            # Need to extract the numeric value from the formatted balance string
-            # This is a bit fragile, assuming format is "X.XX CUR"
-            formatted_output.sort(key=lambda x: float(x[1].split(' ')[0].replace(',', '')))
-    else:
-        # Default sort by account
-        formatted_output.sort(key=lambda x: x[0])
+    
 
     return formatted_output
 

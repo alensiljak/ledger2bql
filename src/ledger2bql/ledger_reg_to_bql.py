@@ -46,6 +46,8 @@ def create_parser():
         """
     )
     add_common_arguments(parser)
+    # Override the default sort for 'reg' to be no sort
+    parser.set_defaults(sort=None)
     parser.add_argument(
         '--total', '-t',
         action='store_true',

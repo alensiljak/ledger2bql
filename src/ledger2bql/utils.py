@@ -35,7 +35,7 @@ def add_common_arguments(parser):
     parser.add_argument(
         '--sort', '-S',
         type=str,
-        default='date, account',
+        default='account',
         help="Sort the results by the given comma-separated fields. Prefix with - for descending order."
     )
     parser.add_argument(
