@@ -1,0 +1,11 @@
+; Sample ledger for tests
+
+; accounts
+1900-01-01 open Assets:Cash:Pocket-Money
+1900-01-01 open Expenses:Sweets
+
+; transactions
+
+2025-02-01 txn "Ice Cream Shop" "Ice Cream"
+  Expenses:Sweets  20 EUR
+  Assets:Cash:Pocket-Money

@@ -11,6 +11,12 @@ The purpose of this project, a simple CLI utility, is to accept a Ledger-like sy
 
 # Development
 
+## Setup
+Add an `.env` file, specifying the `BEANCOUNT_FILE` location.
+```
+BEANCOUNT_FILE=tests/sample_ledger.bean
+```
+
 ```sh
 uv sync
 ```

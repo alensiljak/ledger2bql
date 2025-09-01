@@ -31,13 +31,9 @@ Key Mappings:
 
 import argparse
 import os
-import sys
-from dotenv import load_dotenv
-from decimal import Decimal
 from .date_parser import parse_date
-# You will need to install the tabulate library for pretty-printing:
-# pip install tabulate
 from tabulate import tabulate
+import beanquery
 
 
 def create_parser():
@@ -133,11 +129,10 @@ def parse_query():
 
 
 def run_bql_query(query: str, book: str) -> list:
-    '''Run the BQL query and return results
+    '''
+    Run the BQL query and return results
     book: Path to beancount file.
     '''
-    import beanquery
-
     # Create the connection. Pre-load the beanquery data.
     connection = beanquery.connect("beancount:" + book)
 
@@ -179,7 +174,6 @@ def format_output(output: list) -> list:
 def main():
     """Runs the given query and prints the output in a pretty format."""
     # Get environment variables
-    load_dotenv()
     BEANCOUNT_FILE = os.getenv("BEANCOUNT_FILE")
     if not BEANCOUNT_FILE:
         raise Exception('Beancount file not set.')
