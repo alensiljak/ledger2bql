@@ -1,6 +1,6 @@
 [project]
 name = "ledger2bql"
-version = "0.4.5"
+version = "0.4.7"
 description = "Translate Ledger CLI query syntax into BQL"
 readme = "README.md"
 authors = [

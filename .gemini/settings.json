@@ -10,6 +10,21 @@
         "@modelcontextprotocol/server-filesystem",
         "x:\\pim\\beans"
       ]
+    },
+    "Beanquery MCP": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--with",
+        "beancount",
+        "--with",
+        "beanquery",
+        "--with",
+        "mcp[cli]",
+        "mcp",
+        "run",
+        "D:\\src\\beanquery-mcp\\server.py"
+      ]
     }
   }
 }

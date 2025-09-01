@@ -81,14 +81,13 @@ def parse_query(args):
     # Handle zero balance filtering
 
     # Build the final query
-    select_clause = "SELECT account, sum(position)"
+    select_clause = "SELECT account, sum(position) as Balance"
     query = select_clause
 
     if where_clauses:
         query += " WHERE " + " AND ".join(where_clauses)
 
-    # Always group by account when summing positions
-    group_by_clauses.append("account")
+    
 
     if group_by_clauses:
         query += " GROUP BY " + ", ".join(group_by_clauses)

@@ -2,6 +2,8 @@
 
 Consult ReadMe.md for the basic project overview.
 
+Use the Beancount MCP to run BQL queries against the data.
+
 # Functionality
 When designing new features, always consult Ledger CLI documentation to see the original features available in Ledger CLI. 
 Try to match the existing features in Ledger CLI as much as reasonably possible.
