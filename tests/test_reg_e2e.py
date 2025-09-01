@@ -1,11 +1,10 @@
 import os
-import pytest
 from unittest.mock import patch
 import io
 from contextlib import redirect_stdout
-import os
 
 from ledger2bql.ledger_reg_to_bql import main as reg_main
+
 
 @patch('os.getenv')
 def test_reg_no_args(mock_getenv):
