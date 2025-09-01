@@ -62,11 +62,13 @@ ledger2bql bal --help
 ledger2bql reg --help
 ```
 
-## Example
+# Output
+
+## Balance
 
 Running
 ```sh
-l b cash
+l b
 ```
 will output
 ```
@@ -79,4 +81,23 @@ SELECT account, sum(position) as balance WHERE account ~ 'cash'
 |--------------------------+------------|
 | Assets:Cash:Pocket-Money | -20.00 EUR |
 +--------------------------+------------+
+```
+
+## Register
+Command 
+```sh
+l r exp
+```
+outputs
+```
+Your BQL query is:
+
+SELECT date, account, payee, narration, position WHERE account ~ 'exp' ORDER BY date, account
+
++------------+-----------------+----------------+-------------+------------+
+| Date       | Account         | Payee          | Narration   |     Amount |
+|------------+-----------------+----------------+-------------+------------|
+| 2025-02-01 | Expenses:Sweets | Ice Cream Shop | Ice Cream   |  20.00 EUR |
+| 2025-03-01 | Expenses:Food   | Grocery Store  | Groceries   | 100.00 EUR |
++------------+-----------------+----------------+-------------+------------+
 ```
