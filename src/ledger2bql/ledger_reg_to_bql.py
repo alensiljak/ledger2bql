@@ -68,6 +68,17 @@ def create_parser():
         action='store_true',
         help="Calculate and display a running total."
     )
+    parser.add_argument(
+        '--sort', '-S',
+        type=str,
+        default='date, account',
+        help="Sort the results by the given comma-separated fields. Prefix with - for descending order."
+    )
+    parser.add_argument(
+        '--limit',
+        type=int,
+        help="Limit the number of results."
+    )
     return parser
 
 
@@ -81,7 +92,7 @@ def parse_query():
     # Handle account regular expressions
     if args.account_regex:
         for regex in args.account_regex:
-            where_clauses.append(f'account ~ "{regex}"')
+            where_clauses.append(f"account ~ '{regex}'")
 
     # Handle date ranges
     if args.begin:
@@ -95,8 +106,17 @@ def parse_query():
 
     if where_clauses:
         query += " WHERE " + " AND ".join(where_clauses)
-    
-    query += " ORDER BY date, account"
+
+    # Handle sorting
+    if args.sort:
+        sort_keys = []
+        for key in args.sort.split(','):
+            key = key.strip()
+            if key.startswith('-'):
+                sort_keys.append(f"{key[1:]} DESC")
+            else:
+                sort_keys.append(key)
+        query += " ORDER BY " + ", ".join(sort_keys)
     
     print(f"\nYour BQL query is:\n\n{query}\n")
 
@@ -166,6 +186,9 @@ def main():
     output = run_bql_query(query, BEANCOUNT_FILE)
     
     formatted_output = format_output(output, args.total)
+
+    if args.limit:
+        formatted_output = formatted_output[:args.limit]
 
     # Determine headers and alignments for the table
     headers = ["Date", "Account", "Payee", "Narration", "Amount"]

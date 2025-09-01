@@ -75,6 +75,12 @@ def create_parser():
         help="Transactions strictly before this date. Format: YYYY-MM-DD."
     )
 
+    parser.add_argument(
+        '--limit',
+        type=int,
+        help="Limit the number of results."
+    )
+
     return parser
 
 
@@ -89,7 +95,7 @@ def parse_query():
     # 1. Handle account regular expression (now supports multiple)
     if args.account_regex:
         for regex in args.account_regex:
-            where_clauses.append(f'account ~ "{regex}"')
+            where_clauses.append(f"account ~ '{regex}'")
 
     # 2. Handle date ranges
     if args.begin:
@@ -180,6 +186,9 @@ def main():
     
     # Format the output to remove the parentheses
     formatted_output = format_output(output)
+
+    if args.limit:
+        formatted_output = formatted_output[:args.limit]
 
     # Determine headers for the table
     headers = ["Account", "Balance"]
