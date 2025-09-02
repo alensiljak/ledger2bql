@@ -53,6 +53,8 @@ uv tool install ledger2bql
 Set the `BEANCOUNT_FILE` variable to point to your Beancount ledger file.
 You can create an .env file, to customize different ledgers for different folders.
 
+For convenience, you can use a `l.cmd` as a shortcut for ledger2bql. See the actual file in the project root.
+
 Run
 ```sh
 ledger2bql b card
@@ -109,8 +111,42 @@ SELECT date, account, payee, narration, position WHERE account ~ 'exp' ORDER BY 
 +------------+-----------------+----------------+-------------+------------+
 ```
 
-# Filters
+# Filter Syntax
 
 The filters have initially matched the Ledger CLI syntax but some have been adjusted for convenience.
 
-For example, a date range syntax has been introduced. Instead of using `-b 2025 -e 2025-06`, you can simply write `-d 2025..2025-06`.
+## Description
+
+Similar to Ledger's Payee spec, `@some_store`, the `@` syntax is available. For Beancount, however, it is more useful to search through the Description, which is a combination of Payee and Narration fields.
+
+```sh
+D:\src\ledger2bql>l b @ice
+
+Your BQL query is:
+SELECT account, units(sum(position)) as Balance WHERE description ~ 'ice' ORDER BY account ASC
+
++--------------------------+------------+
+| Account                  |    Balance |
+|--------------------------+------------|
+| Assets:Cash:Pocket-Money | -20.00 EUR |
+| Expenses:Sweets          |  20.00 EUR |
++--------------------------+------------+
+```
+
+## Date Range
+
+A new, date range, syntax has been introduced. Instead of using `-b 2025 -e 2025-06`, you can simply write `-d 2025..2025-06`.
+
+```sh
+D:\src\ledger2bql>l r -d 2025-01
+
+Your BQL query is:
+SELECT date, account, payee, narration, position WHERE date >= date("2025-01-01") AND date < date("2025-02-01")
+
++------------+-------------------------+---------+-----------------+---------------+
+| Date       | Account                 | Payee   | Narration       |        Amount |
+|------------+-------------------------+---------+-----------------+---------------|
+| 2025-01-01 | Assets:Bank:Checking    |         | Initial Balance |  1,000.00 EUR |
+| 2025-01-01 | Equity:Opening-Balances |         | Initial Balance | -1,000.00 EUR |
++------------+-------------------------+---------+-----------------+---------------+
+```
