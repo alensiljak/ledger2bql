@@ -1,4 +1,3 @@
-
 '''
 Tests for the Balance command.
 '''
@@ -50,6 +49,30 @@ def test_bal_no_args(mock_getenv):
     assert "-20.00 EUR" in table_output
     assert "Expenses:Sweets" in table_output
     assert "20.00 EUR" in table_output
+
+
+@patch('os.getenv')
+def test_bal_filter_by_payee(mock_getenv):
+    # Arrange
+    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+    
+    f = io.StringIO()
+    with redirect_stdout(f):
+        with patch('sys.argv', ['bal', '@Grocery Store']):
+            # Act
+            bal_main()
+    
+    # Assert
+    output = f.getvalue()
+    
+    table_lines = extract_table_data(output.splitlines())
+    table_output = "\n".join(table_lines)
+
+    assert "Assets:Bank:Checking" in table_output
+    assert "-100.00 EUR" in table_output
+    assert "Expenses:Food" in table_output
+    assert "100.00 EUR" in table_output
+    assert "Assets:Cash:Pocket-Money" not in table_output
 
 
 @patch('os.getenv')

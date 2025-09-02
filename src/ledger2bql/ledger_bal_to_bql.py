@@ -22,7 +22,7 @@ Key Mappings:
   - `--depth X` or `-d X` -> `GROUP BY level(account) <= X`
   - `--zero` or `-Z`       -> `WHERE balance != 0` (removes accounts with zero balance)
   - `--begin DATE` or `-b DATE` -> `WHERE date >= "DATE"`
-  - `--end DATE` or `-E DATE`   -> `WHERE date < "DATE"`
+  - `--end DATE` or `-e DATE`   -> `WHERE date < "DATE"`
   - `ACCOUNT_REGEX`           -> `WHERE account ~ "ACCOUNT_REGEX"`
 """
 
@@ -62,10 +62,19 @@ def parse_query(args):
     '''Parse Ledger query into BQL'''
     where_clauses = []
     group_by_clauses = []
+    account_regexes = []
 
     # Handle common arguments
     if args.account_regex:
         for regex in args.account_regex:
+            if regex.startswith('@'):
+                payee = regex[1:]
+                where_clauses.append(f"description ~ '{payee}'")
+            else:
+                account_regexes.append(regex)
+
+    if account_regexes:
+        for regex in account_regexes:
             where_clauses.append(f"account ~ '{regex}'")
 
     if args.begin:

@@ -20,7 +20,7 @@ Example:
 
 Key Mappings:
   - `--begin DATE` or `-b DATE` -> `WHERE date >= "DATE"`
-  - `--end DATE` or `-E DATE`   -> `WHERE date < "DATE"`
+  - `--end DATE` or `-e DATE`   -> `WHERE date < "DATE"`
   - `--total` or `-t`           -> Calculates a running total column
   - `ACCOUNT_REGEX`           -> `WHERE account ~ "ACCOUNT_REGEX"`
 """
@@ -56,10 +56,19 @@ def create_parser():
 
 def parse_query(args):
     where_clauses = []
+    account_regexes = []
     
-    # Handle account regular expressions
+    # Handle account regular expressions and payee filters
     if args.account_regex:
         for regex in args.account_regex:
+            if regex.startswith('@'):
+                payee = regex[1:]
+                where_clauses.append(f"description ~ '{payee}'")
+            else:
+                account_regexes.append(regex)
+
+    if account_regexes:
+        for regex in account_regexes:
             where_clauses.append(f"account ~ '{regex}'")
 
     # Handle date ranges
