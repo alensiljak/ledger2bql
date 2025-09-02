@@ -60,7 +60,7 @@ For convenience, you can use a `l.cmd` as a shortcut for ledger2bql. See the act
 Run
 ```sh
 ledger2bql b card
-ledger2bql r card -b 2025-08-01
+ledger2bql r card -b 2025-08
 ```
 
 To get the list of available parameters, simply run
@@ -97,14 +97,8 @@ SELECT account, sum(position) GROUP BY account ORDER BY account ASC
 
 To show a grand total row at the end of the balance report, use the `--total` or `-T` flag:
 ```sh
-l b --total
-```
-or
-```sh
-l b -T
-```
-will output
-```
+# l b --total
+
 Your BQL query is:
 SELECT account, sum(position) GROUP BY account ORDER BY account ASC
 
@@ -124,7 +118,8 @@ SELECT account, sum(position) GROUP BY account ORDER BY account ASC
 
 ## Register
 
-The register command shows transaction details. Running
+The register command lists transactions/postings. 
+Running
 ```sh
 l r
 ```
@@ -147,14 +142,8 @@ SELECT date, account, payee, narration, position
 
 To show a running total column in the register report, use the `--total` or `-T` flag:
 ```sh
-l r --total
-```
-or
-```sh
-l r -T
-```
-will output
-```
+# l r --total
+
 Your BQL query is:
 SELECT date, account, payee, narration, position
 
@@ -170,8 +159,13 @@ SELECT date, account, payee, narration, position
 +------------+--------------------------+----------------+------------------+---------------+-----------------+
 ```
 
-## Register
-Command 
+# Filter Syntax
+
+The filters have initially matched the Ledger CLI syntax but some have been adjusted for convenience.
+
+## Account
+
+To narrow-down to certain accounts only, simply write a part of the account name.
 ```sh
 l r exp
 ```
@@ -188,11 +182,7 @@ SELECT date, account, payee, narration, position WHERE account ~ 'exp' ORDER BY 
 +------------+-----------------+----------------+-------------+------------+
 ```
 
-# Filter Syntax
-
-The filters have initially matched the Ledger CLI syntax but some have been adjusted for convenience.
-
-## Description
+## Description / Payee
 
 Similar to Ledger's Payee spec, `@some_store`, the `@` syntax is available. For Beancount, however, it is more useful to search through the Description, which is a combination of Payee and Narration fields.
 
