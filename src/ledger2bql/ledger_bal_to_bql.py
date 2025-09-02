@@ -79,10 +79,10 @@ def parse_query(args):
 
     if args.begin:
         begin_date = parse_date(args.begin)
-        where_clauses.append(f'date >= "{begin_date}"')
+        where_clauses.append(f'date >= date("{begin_date}")')
     if args.end:
         end_date = parse_date(args.end)
-        where_clauses.append(f'date < "{end_date}"')
+        where_clauses.append(f'date < date("{end_date}")')
 
     # Build the final query
     select_clause = "SELECT account, units(sum(position)) as Balance"

@@ -245,3 +245,27 @@ def test_bal_units(mock_getenv):
     table_output = "\n".join(table_lines)
 
     assert "| Equity:Stocks | 12.00 ABC |" in table_output
+
+
+@patch('os.getenv')
+def test_bal_filter_by_payee_and_date(mock_getenv):
+    # Arrange
+    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+    
+    f = io.StringIO()
+    with redirect_stdout(f):
+        with patch('sys.argv', ['bal', '@Employer', '-b', '2025-03']):
+            # Act
+            bal_main()
+    
+    # Assert
+    output = f.getvalue()
+    
+    table_lines = extract_table_data(output.splitlines())
+    table_output = "\n".join(table_lines)
+
+    assert "Assets:Bank:Checking" in table_output
+    assert "1,000.00 EUR" in table_output
+    assert "Income:Salary" in table_output
+    assert "-1,000.00 EUR" in table_output
+    assert "Expenses:Food" not in table_output
