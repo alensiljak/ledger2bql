@@ -118,7 +118,7 @@ def execute_bql_command(create_parser_func, parse_query_func, format_output_func
         return
 
     # Print the BQL query
-    print(f"\nYour BQL query is:\n\n{query}\n")
+    print(f"\nYour BQL query is:\n{query}\n")
 
     # Determine headers and alignments for the table based on args
     if hasattr(args, 'total') and args.total:

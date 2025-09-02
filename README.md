@@ -77,7 +77,6 @@ l b
 will output
 ```
 Your BQL query is:
-
 SELECT account, sum(position) GROUP BY account ORDER BY account ASC
 
 +--------------------------+---------------+
@@ -100,7 +99,6 @@ l r exp
 outputs
 ```
 Your BQL query is:
-
 SELECT date, account, payee, narration, position WHERE account ~ 'exp' ORDER BY date, account
 
 +------------+-----------------+----------------+-------------+------------+
