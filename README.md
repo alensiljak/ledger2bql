@@ -116,7 +116,7 @@ SELECT account, sum(position) GROUP BY account ORDER BY account ASC
 | Expenses:Sweets          |     20.00 EUR |
 | Income:Salary            | -1,000.00 EUR |
 |--------------------------+---------------|
-| Total                    |     -15.35 EUR |
+| Total                    |    -15.35 EUR |
 +--------------------------+---------------+
 ```
 
