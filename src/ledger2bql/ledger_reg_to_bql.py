@@ -98,7 +98,11 @@ def parse_query(args):
     
     # Handle currency filter
     if args.currency:
-        where_clauses.append(f"currency = '{args.currency}'")
+        if isinstance(args.currency, list):
+            currencies_str = "', '".join(args.currency)
+            where_clauses.append(f"currency IN ('{currencies_str}')")
+        else:
+            where_clauses.append(f"currency = '{args.currency}'")
 
     # Build the final query
     select_clause = "SELECT date, account, payee, narration, position"

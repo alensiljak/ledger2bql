@@ -103,7 +103,11 @@ def parse_query(args):
     
     # Handle currency filter
     if args.currency:
-        where_clauses.append(f"currency = '{args.currency}'")
+        if isinstance(args.currency, list):
+            currencies_str = "', '".join(args.currency)
+            where_clauses.append(f"currency IN ('{currencies_str}')")
+        else:
+            where_clauses.append(f"currency = '{args.currency}'")
 
     # Build the final query
     select_clause = "SELECT account, units(sum(position)) as Balance"
@@ -153,7 +157,7 @@ def format_output(output: list, args) -> list:
         
         # An Inventory object can contain multiple currencies. We need to iterate
         # through its items, which are (currency, Position) pairs.
-        formatted_balance = ""
+        balance_parts = []
         for currency, amount in balance_inventory.items():
             # Check if the currency is a tuple and extract the string
             if isinstance(currency, tuple):
@@ -164,7 +168,9 @@ def format_output(output: list, args) -> list:
             # Correctly access the number from the Position object's `units`
             formatted_value = "{:,.2f}".format(amount.units.number)
             
-            formatted_balance += f"{formatted_value} {currency_str}"
+            balance_parts.append(f"{formatted_value} {currency_str}")
+        
+        formatted_balance = " ".join(balance_parts)
         
         new_row = list(row)
         new_row[-1] = formatted_balance

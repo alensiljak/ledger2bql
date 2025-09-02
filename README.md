@@ -156,3 +156,23 @@ l r -d 2025-03..
 l r -d ..2025-03
 ```
 Specifying just a value, without the `..` operator, will use it as a range, as well.
+
+## Currency
+
+Filtering by currency is done via `-c` parameter. The currency spec is case-insensitive. Multiple currencies can be specified, separated by comma, without spaces.
+
+```sh
+D:\src\ledger2bql>l r -c abc,bam
+
+Your BQL query is:
+SELECT date, account, payee, narration, position WHERE currency IN ('ABC', 'BAM')
+
++------------+-----------------+-------------+-----------------+------------+
+| Date       | Account         | Payee       | Narration       |     Amount |
+|------------+-----------------+-------------+-----------------+------------|
+| 2025-04-01 | Equity:Stocks   |             | Buy Stocks      |   5.00 ABC |
+| 2025-04-02 | Equity:Stocks   |             | Buy more stocks |   7.00 ABC |
+| 2025-05-01 | Expenses:Food   | Supermarket | drinks          |  25.00 BAM |
+| 2025-05-01 | Assets:Cash:BAM | Supermarket | drinks          | -25.00 BAM |
++------------+-----------------+-------------+-----------------+------------+
+```

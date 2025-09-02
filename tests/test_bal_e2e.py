@@ -94,14 +94,16 @@ def test_bal_default_sort_by_account(mock_getenv):
 
     # Expected order based on sample_ledger.bean and alphabetical sort
     expected_table_output_lines = [
-        "| Assets:Bank:Checking     |        1,884.65 EUR |",
-        "| Assets:Cash:BAM          |          -25.00 BAM |",
-        "| Assets:Cash:Pocket-Money |          -20.00 EUR |",
-        "| Equity:Opening-Balances  |       -1,000.00 EUR |",
-        "| Equity:Stocks            |           12.00 ABC |",
-        "| Expenses:Food            | 100.00 EUR25.00 BAM |",
-        "| Expenses:Sweets          |           20.00 EUR |",
-        "| Income:Salary            |       -1,000.00 EUR |"
+        "| Assets:Bank:Checking     |         1,884.65 EUR |",
+        "| Assets:Cash:BAM          |           -25.00 BAM |",
+        "| Assets:Cash:Pocket-Money |           -20.00 EUR |",
+        "| Assets:Cash:USD          |            -7.00 USD |",
+        "| Equity:Opening-Balances  |        -1,000.00 EUR |",
+        "| Equity:Stocks            |            12.00 ABC |",
+        "| Expenses:Food            | 100.00 EUR 25.00 BAM |",
+        "| Expenses:Sweets          |            20.00 EUR |",
+        "| Expenses:Transport       |             7.00 USD |",
+        "| Income:Salary            |        -1,000.00 EUR |"
     ]
     
     # Check if the table output contains the expected lines in order

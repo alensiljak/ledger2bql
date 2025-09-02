@@ -191,3 +191,71 @@ def test_currency_uppercase_conversion(mock_getenv):
     output = f.getvalue()
     assert "currency = 'ABC'" in output
     assert "currency = 'AbC'" not in output
+
+
+@patch('os.getenv')
+def test_bal_multiple_currency_filter(mock_getenv):
+    """Test balance command with multiple currency filter."""
+    # Arrange
+    mock_getenv.return_value = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
+    )
+
+    f = io.StringIO()
+    with redirect_stdout(f):
+        with patch('sys.argv', ['bal', '--currency', 'eur,bam']):
+            # Act
+            bal_main()
+
+    # Assert
+    output = f.getvalue()
+    
+    # The query should use IN clause for multiple currencies
+    assert "currency IN ('EUR', 'BAM')" in output
+    
+    # Extract table data
+    table_lines = extract_table_data(output.splitlines())
+    table_output = "\n".join(table_lines)
+    
+    # Should show accounts with EUR currency
+    assert "| Assets:Bank:Checking     |         1,884.65 EUR |" in table_output
+    assert "| Assets:Cash:Pocket-Money |           -20.00 EUR |" in table_output
+    assert "| Equity:Opening-Balances  |        -1,000.00 EUR |" in table_output
+    assert "| Expenses:Sweets          |            20.00 EUR |" in table_output
+    assert "| Income:Salary            |        -1,000.00 EUR |" in table_output
+    
+    # Should show accounts with BAM currency
+    assert "| Assets:Cash:BAM          |           -25.00 BAM |" in table_output
+    
+    # Should show accounts with both currencies
+    assert "| Expenses:Food            | 100.00 EUR 25.00 BAM |" in table_output
+    
+    # Should not show accounts with only ABC currency
+    assert "| Equity:Stocks | 12.00 ABC |" not in table_output
+
+
+@patch('os.getenv')
+def test_reg_multiple_currency_filter(mock_getenv):
+    """Test register command with multiple currency filter."""
+    # Arrange
+    mock_getenv.return_value = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
+    )
+
+    f = io.StringIO()
+    with redirect_stdout(f):
+        with patch('sys.argv', ['reg', '--currency', 'eur,abc']):
+            # Act
+            reg_main()
+
+    # Assert
+    output = f.getvalue()
+    
+    # The query should use IN clause for multiple currencies
+    assert "currency IN ('EUR', 'ABC')" in output
+    
+    # Should show transactions with EUR or ABC currency
+    assert "EUR" in output
+    assert "ABC" in output
+    assert "Assets:Bank:Checking" in output
+    assert "Equity:Stocks" in output

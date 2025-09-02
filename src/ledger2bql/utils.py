@@ -62,8 +62,8 @@ def add_common_arguments(parser):
     )
     parser.add_argument(
         '--currency', '-c',
-        type=lambda x: x.upper() if x else None,
-        help='Filter by currency. E.g. EUR'
+        type=lambda x: [currency.upper() for currency in x.split(',')] if x and ',' in x else (x.upper() if x else None),
+        help='Filter by currency. E.g. EUR or EUR,BAM'
     )
 
 

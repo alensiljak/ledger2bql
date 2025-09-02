@@ -4,12 +4,14 @@
 1900-01-01 open Assets:Bank:Checking EUR
 1900-01-01 open Assets:Cash:Pocket-Money EUR
 1900-01-01 open Assets:Cash:BAM BAM
+1900-01-01 open Assets:Cash:USD USD
 2025-01-01 open Equity:Opening-Balances EUR
 1900-01-01 open Equity:Stocks
 1900-01-01 open Income:Salary
 ; expenses
 1900-01-01 open Expenses:Food
 1900-01-01 open Expenses:Sweets
+1900-01-01 open Expenses:Transport
 
 ; transactions
 
@@ -40,3 +42,7 @@
 2025-05-01 txn "Supermarket" "drinks"
   Expenses:Food 25 BAM
   Assets:Cash:BAM
+
+2025-06-04 txn "Metro" "public transport"
+  Expenses:Transport 7 USD
+  Assets:Cash:USD
