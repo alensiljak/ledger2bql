@@ -1,12 +1,12 @@
 [project]
 name = "ledger2bql"
-version = "0.4.7"
+version = "0.4.8"
 description = "Translate Ledger CLI query syntax into BQL"
 readme = "README.md"
 authors = [
   { name='Alen Šiljak' }
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
     "beanquery>=0.2.0",
     "dotenv>=0.9.9",
