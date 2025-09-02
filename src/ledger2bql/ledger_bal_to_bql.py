@@ -92,6 +92,10 @@ def parse_query(args):
             if cur:
                 amount_clause += f" AND currency = '{cur}'"
             where_clauses.append(amount_clause)
+    
+    # Handle currency filter
+    if args.currency:
+        where_clauses.append(f"currency = '{args.currency}'")
 
     # Build the final query
     select_clause = "SELECT account, units(sum(position)) as Balance"

@@ -56,6 +56,11 @@ def add_common_arguments(parser):
         action='append',
         help='Filter by amount. Format: [>|>=|<|<=|=]AMOUNT[CURRENCY]. E.g. >100EUR'
     )
+    parser.add_argument(
+        '--currency', '-c',
+        type=lambda x: x.upper() if x else None,
+        help='Filter by currency. E.g. EUR'
+    )
 
 
 def run_bql_query(query: str, book: str) -> list:

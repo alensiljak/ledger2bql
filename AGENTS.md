@@ -16,6 +16,8 @@ When creating new features, re-use existing code and write new code into reusabl
 
 Create tests first, before applying new functionality. Then run them after implementation, to confirm the functionality works as expected.
 
+Do not commit code to the Git repository. The user will do this after reviewing changes.
+
 # Running Python
 To run Python scripts, use `uv`:
 ```sh
@@ -29,3 +31,4 @@ To run tests, also run with `uv`:
 ```sh
 uv run pytest
 ```
+Use `pytest` for unit tests. Do not introduce new frameworks.
