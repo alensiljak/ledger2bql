@@ -163,6 +163,12 @@ SELECT date, account, payee, narration, position
 
 The filters have initially matched the Ledger CLI syntax but some have been adjusted for convenience.
 
+They can be combined, providing powerful filtering capabilities. I.e.
+to list all transactions in BAM, in the specified date period, for accounts containing "exp", to a payee/narration containing "super":
+```sh
+l r -c bam -d 2025-01-05..2025-01-17 exp @super
+```
+
 ## Account
 
 To narrow-down to certain accounts only, simply write a part of the account name.
