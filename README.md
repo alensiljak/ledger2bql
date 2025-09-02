@@ -3,7 +3,8 @@ Translate Ledger CLI query syntax into BQL
 
 Implemented in Python.
 
-The package is available at https://pypi.org/project/ledger2bql/.
+The package is available at 
+[![PyPI version](https://img.shields.io/pypi/v/ledger2bql.svg)](https://pypi.org/project/ledger2bql/).
 
 # Introduction
 
