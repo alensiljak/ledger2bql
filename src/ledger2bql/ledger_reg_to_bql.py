@@ -21,7 +21,7 @@ Example:
 Key Mappings:
   - `--begin DATE` or `-b DATE` -> `WHERE date >= "DATE"`
   - `--end DATE` or `-e DATE`   -> `WHERE date < "DATE"`
-  - `--total` or `-t`           -> Calculates a running total column
+  - `--total` or `-T`           -> Calculates a running total column
   - `ACCOUNT_REGEX`           -> `WHERE account ~ "ACCOUNT_REGEX"`
   - `@DESCRIPTION_REGEX   -> `WHERE description ~ "DESCRIPTION_REGEX"`
 """
@@ -45,12 +45,6 @@ def create_parser():
     add_common_arguments(parser)
     # Override the default sort for 'reg' to be no sort
     parser.set_defaults(sort=None)
-    parser.add_argument(
-        '--total', '-t',
-        action='store_true',
-        help="Calculate and display a running total.",
-        default=False
-    )
     return parser
 
 
@@ -125,7 +119,7 @@ def parse_query(args):
     return query
 
 
-def format_output(output: list, show_total: bool) -> list:
+def format_output(output: list, args) -> list:
     """Formats the raw output from the BQL query into a pretty-printable list."""
     formatted_output = []
     running_total = defaultdict(Decimal)
@@ -155,7 +149,7 @@ def format_output(output: list, show_total: bool) -> list:
             formatted_transaction_amount
         ]
 
-        if show_total:
+        if args.total:
             new_row.append(formatted_running_total)
         
         formatted_output.append(new_row)
@@ -166,7 +160,7 @@ def format_output(output: list, show_total: bool) -> list:
 def main():
     """Runs the given query and prints the output in a pretty format."""
     def format_output_with_args(output, args):
-        formatted = format_output(output, args.total)
+        formatted = format_output(output, args)
         if args.limit:
             formatted = formatted[:args.limit]
         return formatted
@@ -176,7 +170,7 @@ def main():
     alignments = ["left", "left", "left", "left", "right"]
 
     execute_bql_command(create_parser, parse_query, format_output_with_args, 
-                        headers, alignments)
+                        headers, alignments, command_type='reg')
 
 
 if __name__ == '__main__':

@@ -59,11 +59,6 @@ def create_parser():
         action='store_true',
         help="Exclude accounts with a zero balance."
     )
-    parser.add_argument(
-        '--total', '-T',
-        action='store_true',
-        help="Show a grand total row at the end of the balance report."
-    )
 
     return parser
 
@@ -219,13 +214,9 @@ def main():
     headers = ["Account", "Balance"]
     alignments = ["left", "right"]
     
-    # Parse arguments to check for --total flag
-    parser = create_parser()
-    args, _ = parser.parse_known_args()
-    
     # Pass args.depth to format_output_func via kwargs
     execute_bql_command(create_parser, parse_query, format_output, 
-                        headers, alignments)
+                        headers, alignments, command_type='bal')
 
 
 if __name__ == '__main__':

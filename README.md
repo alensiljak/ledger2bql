@@ -97,6 +97,10 @@ To show a grand total row at the end of the balance report, use the `--total` or
 ```sh
 l b --total
 ```
+or
+```sh
+l b -T
+```
 will output
 ```
 Your BQL query is:
@@ -114,6 +118,54 @@ SELECT account, sum(position) GROUP BY account ORDER BY account ASC
 |--------------------------+---------------|
 | Total                    |     -15.35 EUR |
 +--------------------------+---------------+
+```
+
+## Register
+
+The register command shows transaction details. Running
+```sh
+l r
+```
+will output
+```
+Your BQL query is:
+SELECT date, account, payee, narration, position
+
++------------+-------------------------+----------------+-------------+---------------+
+| Date       | Account                 | Payee          | Narration   |        Amount |
+|------------+-------------------------+----------------+-------------+---------------|
+| 2025-01-01 | Assets:Bank:Checking    |                | Initial Bal |  1,000.00 EUR |
+| 2025-01-01 | Equity:Opening-Balances |                | Initial Bal | -1,000.00 EUR |
+| 2025-02-01 | Expenses:Sweets         | Ice Cream Shop | Ice Cream   |     20.00 EUR |
+| 2025-02-01 | Assets:Cash:Pocket-Mone | Ice Cream Shop | Ice Cream   |    -20.00 EUR |
+| 2025-03-01 | Expenses:Food           | Grocery Store  | Groceries   |    100.00 EUR |
+| 2025-03-01 | Assets:Bank:Checking    | Grocery Store  | Groceries   |   -100.00 EUR |
++------------+-------------------------+----------------+-------------+---------------+
+```
+
+To show a running total column in the register report, use the `--total` or `-T` flag:
+```sh
+l r --total
+```
+or
+```sh
+l r -T
+```
+will output
+```
+Your BQL query is:
+SELECT date, account, payee, narration, position
+
++------------+--------------------------+----------------+------------------+---------------+-----------------+
+| Date       | Account                  | Payee          | Narration        |        Amount |   Running Total |
+|------------+--------------------------+----------------+------------------+---------------+-----------------|
+| 2025-01-01 | Assets:Bank:Checking     |                | Initial Balance  |  1,000.00 EUR |    1,000.00 EUR |
+| 2025-01-01 | Equity:Opening-Balances  |                | Initial Balance  | -1,000.00 EUR |        0.00 EUR |
+| 2025-02-01 | Expenses:Sweets          | Ice Cream Shop | Ice Cream        |     20.00 EUR |       20.00 EUR |
+| 2025-02-01 | Assets:Cash:Pocket-Money | Ice Cream Shop | Ice Cream        |    -20.00 EUR |        0.00 EUR |
+| 2025-03-01 | Expenses:Food            | Grocery Store  | Groceries        |    100.00 EUR |      100.00 EUR |
+| 2025-03-01 | Assets:Bank:Checking     | Grocery Store  | Groceries        |   -100.00 EUR |        0.00 EUR |
++------------+--------------------------+----------------+------------------+---------------+-----------------+
 ```
 
 ## Register

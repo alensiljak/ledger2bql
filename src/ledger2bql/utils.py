@@ -4,6 +4,7 @@ Shared utilities.
 import argparse
 import os
 import re
+import sys
 from decimal import Decimal
 import beanquery
 from tabulate import tabulate
@@ -65,6 +66,11 @@ def add_common_arguments(parser):
         type=lambda x: [currency.upper() for currency in x.split(',')] if x and ',' in x else (x.upper() if x else None),
         help='Filter by currency. E.g. EUR or EUR,BAM'
     )
+    parser.add_argument(
+        '--total', '-T',
+        action='store_true',
+        help='Show a grand total row at the end of the balance report or a running total column in the register report.'
+    )
 
 
 def run_bql_query(query: str, book: str) -> list:
@@ -102,7 +108,7 @@ def parse_amount_filter(amount_str):
 
 
 def execute_bql_command(create_parser_func, parse_query_func, format_output_func, 
-                        headers, alignments, **kwargs):
+                        headers, alignments, command_type=None, **kwargs):
     """
     Executes a BQL command by parsing arguments, constructing a query, running it, 
     and formatting output.
@@ -130,8 +136,10 @@ def execute_bql_command(create_parser_func, parse_query_func, format_output_func
     print(f"\nYour BQL query is:\n{query}\n")
 
     # Determine headers and alignments for the table based on args
-    # Only add "Running Total" header if we're actually adding running totals to the data
-    # For the balance command's --total flag, we're adding a grand total row, not running totals
-    
+    # For register command with --total, add a Running Total column
+    if hasattr(args, 'total') and args.total and command_type == 'reg':
+        headers.append("Running Total")
+        alignments.append("right")
+
     print(tabulate(formatted_output, headers=headers, tablefmt="psql", 
                    colalign=alignments))
