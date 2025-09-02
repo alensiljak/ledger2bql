@@ -2,11 +2,10 @@
 '''
 Tests for the Balance command.
 '''
-import re
-from unittest.mock import patch
 import io
-from contextlib import redirect_stdout
 import os
+from contextlib import redirect_stdout
+from unittest.mock import patch
 
 from ledger2bql.ledger_bal_to_bql import main as bal_main
 
