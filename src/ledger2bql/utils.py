@@ -130,9 +130,8 @@ def execute_bql_command(create_parser_func, parse_query_func, format_output_func
     print(f"\nYour BQL query is:\n{query}\n")
 
     # Determine headers and alignments for the table based on args
-    if hasattr(args, 'total') and args.total:
-        headers.append("Running Total")
-        alignments.append("right")
-
+    # Only add "Running Total" header if we're actually adding running totals to the data
+    # For the balance command's --total flag, we're adding a grand total row, not running totals
+    
     print(tabulate(formatted_output, headers=headers, tablefmt="psql", 
                    colalign=alignments))

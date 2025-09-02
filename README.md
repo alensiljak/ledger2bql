@@ -93,6 +93,29 @@ SELECT account, sum(position) GROUP BY account ORDER BY account ASC
 +--------------------------+---------------+
 ```
 
+To show a grand total row at the end of the balance report, use the `--total` or `-T` flag:
+```sh
+l b --total
+```
+will output
+```
+Your BQL query is:
+SELECT account, sum(position) GROUP BY account ORDER BY account ASC
+
++--------------------------+---------------+
+| Account                  |       Balance |
+|--------------------------+---------------|
+| Assets:Bank:Checking     |  1,900.00 EUR |
+| Assets:Cash:Pocket-Money |    -20.00 EUR |
+| Equity:Opening-Balances  | -1,000.00 EUR |
+| Expenses:Food            |    100.00 EUR |
+| Expenses:Sweets          |     20.00 EUR |
+| Income:Salary            | -1,000.00 EUR |
+|--------------------------+---------------|
+| Total                    |     -15.35 EUR |
++--------------------------+---------------+
+```
+
 ## Register
 Command 
 ```sh

@@ -18,11 +18,16 @@ Example:
   # This is equivalent to `ledger bal income expenses`
   python ledger_to_bql.py income expenses
 
+  # Translate a command to show a grand total row.
+  # This is equivalent to `ledger bal --total`
+  python ledger_to_bql.py --total
+
 Key Mappings:
   - `--depth X` or `-d X` -> `GROUP BY level(account) <= X`
   - `--zero` or `-Z`       -> `WHERE balance != 0` (removes accounts with zero balance)
   - `--begin DATE` or `-b DATE` -> `WHERE date >= "DATE"`
   - `--end DATE` or `-e DATE`   -> `WHERE date < "DATE"`
+  - `--total` or `-T`           -> Show a grand total row at the end
   - `ACCOUNT_REGEX`           -> `WHERE account ~ "ACCOUNT_REGEX"`
   - `@DESCRIPTION_REGEX   -> `WHERE description ~ "DESCRIPTION_REGEX"`
 """
@@ -53,6 +58,11 @@ def create_parser():
         '--zero', '-Z',
         action='store_true',
         help="Exclude accounts with a zero balance."
+    )
+    parser.add_argument(
+        '--total', '-T',
+        action='store_true',
+        help="Show a grand total row at the end of the balance report."
     )
 
     return parser
@@ -140,6 +150,10 @@ def parse_query(args):
 def format_output(output: list, args) -> list:
     """Formats the raw output from the BQL query into a pretty-printable list."""
     formatted_output = []
+    
+    # Initialize grand total dictionary to accumulate balances by currency
+    grand_total = {}
+    
     for row in list(output): # Ensure output is a list of lists
         if not row:
             continue
@@ -169,12 +183,32 @@ def format_output(output: list, args) -> list:
             formatted_value = "{:,.2f}".format(amount.units.number)
             
             balance_parts.append(f"{formatted_value} {currency_str}")
+            
+            # Accumulate for grand total
+            if args.total:
+                if currency_str in grand_total:
+                    grand_total[currency_str] += amount.units.number
+                else:
+                    grand_total[currency_str] = amount.units.number
         
         formatted_balance = " ".join(balance_parts)
         
         new_row = list(row)
         new_row[-1] = formatted_balance
         formatted_output.append(tuple(new_row))
+
+    # Add grand total row if requested
+    if args.total and grand_total:
+        # Format the grand total balances
+        total_parts = []
+        for currency, amount in grand_total.items():
+            formatted_value = "{:,.2f}".format(amount)
+            total_parts.append(f"{formatted_value} {currency}")
+        
+        formatted_total = " ".join(total_parts)
+        # Add a separator row and the total row
+        formatted_output.append(("-------------------", "-------------------"))
+        formatted_output.append(("Total", formatted_total))
 
     return formatted_output
 
@@ -184,6 +218,10 @@ def main():
     # Determine headers for the table
     headers = ["Account", "Balance"]
     alignments = ["left", "right"]
+    
+    # Parse arguments to check for --total flag
+    parser = create_parser()
+    args, _ = parser.parse_known_args()
     
     # Pass args.depth to format_output_func via kwargs
     execute_bql_command(create_parser, parse_query, format_output, 
