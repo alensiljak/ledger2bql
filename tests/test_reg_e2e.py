@@ -161,3 +161,39 @@ def test_reg_interleaved_args(mock_getenv):
     assert "Expenses:Sweets" in output
     assert "20.00 EUR" in output
     assert "Grocery Store" not in output
+
+
+@patch('os.getenv')
+def test_reg_filter_by_amount_gt(mock_getenv):
+    # Arrange
+    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+    
+    f = io.StringIO()
+    with redirect_stdout(f):
+        with patch('sys.argv', ['reg', '--amount', '>50']):
+            # Act
+            reg_main()
+    
+    # Assert
+    output = f.getvalue()
+    assert "Grocery Store" in output
+    assert "100.00 EUR" in output
+    assert "Ice Cream" not in output
+
+
+@patch('os.getenv')
+def test_reg_filter_by_amount_gt_eur(mock_getenv):
+    # Arrange
+    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+    
+    f = io.StringIO()
+    with redirect_stdout(f):
+        with patch('sys.argv', ['reg', '--amount', '>50EUR']):
+            # Act
+            reg_main()
+    
+    # Assert
+    output = f.getvalue()
+    assert "Grocery Store" in output
+    assert "100.00 EUR" in output
+    assert "Ice Cream" not in output

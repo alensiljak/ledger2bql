@@ -30,7 +30,7 @@ import argparse
 from decimal import Decimal
 from collections import defaultdict
 from .date_parser import parse_date
-from .utils import add_common_arguments, execute_bql_command
+from .utils import add_common_arguments, execute_bql_command, parse_amount_filter
 
 
 def create_parser():
@@ -78,6 +78,15 @@ def parse_query(args):
     if args.end:
         end_date = parse_date(args.end)
         where_clauses.append(f'date < date("{end_date}")')
+
+    # Handle amount filters
+    if args.amount:
+        for amount_filter in args.amount:
+            op, val, cur = parse_amount_filter(amount_filter)
+            amount_clause = f"number {op} {val}"
+            if cur:
+                amount_clause += f" AND currency = '{cur}'"
+            where_clauses.append(amount_clause)
 
     # Build the final query
     select_clause = "SELECT date, account, payee, narration, position"

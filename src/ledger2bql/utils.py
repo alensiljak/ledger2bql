@@ -3,6 +3,8 @@ Shared utilities.
 '''
 import argparse
 import os
+import re
+from decimal import Decimal
 import beanquery
 from tabulate import tabulate
 
@@ -49,6 +51,11 @@ def add_common_arguments(parser):
         type=int,
         help="Limit the number of results."
     )
+    parser.add_argument(
+        '--amount', '-a',
+        action='append',
+        help='Filter by amount. Format: [>|>=|<|<=|=]AMOUNT[CURRENCY]. E.g. >100EUR'
+    )
 
 
 def run_bql_query(query: str, book: str) -> list:
@@ -64,6 +71,25 @@ def run_bql_query(query: str, book: str) -> list:
     result = cursor.fetchall()
 
     return result
+
+
+def parse_amount_filter(amount_str):
+    """
+    Parses an amount filter string into a (operator, value, currency) tuple.
+    """
+    match = re.match(r'([><]=?|=)?(-?\d+\.?\d*)([A-Z]{3})?', amount_str, re.IGNORECASE)
+    if not match:
+        raise ValueError(f"Invalid amount filter format: {amount_str}")
+    
+    op, val_str, cur = match.groups()
+    
+    op = op or '='
+    val = Decimal(val_str)
+    
+    if cur:
+        cur = cur.upper()
+    
+    return op, val, cur
 
 
 def execute_bql_command(create_parser_func, parse_query_func, format_output_func, 
@@ -82,7 +108,6 @@ def execute_bql_command(create_parser_func, parse_query_func, format_output_func
     book = get_beancount_file_path()
 
     query = parse_query_func(args)
-
     output = run_bql_query(query, book)
 
     # Pass kwargs to format_output_func
