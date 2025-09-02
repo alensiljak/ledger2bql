@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# ledger_to_bql.py
-
 """
 A command-line tool to translate ledger-cli 'balance' command syntax
 into a Beanquery (BQL) query.
@@ -143,8 +140,6 @@ def format_output(output: list, args) -> list:
         new_row[-1] = formatted_balance
         formatted_output.append(tuple(new_row))
 
-    
-
     return formatted_output
 
 
@@ -155,7 +150,8 @@ def main():
     alignments = ["left", "right"]
     
     # Pass args.depth to format_output_func via kwargs
-    execute_bql_command(create_parser, parse_query, format_output, headers, alignments)
+    execute_bql_command(create_parser, parse_query, format_output, 
+                        headers, alignments)
 
 
 if __name__ == '__main__':

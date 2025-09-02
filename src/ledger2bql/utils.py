@@ -1,7 +1,11 @@
+'''
+Shared utilities.
+'''
 import argparse
 import os
 import beanquery
 from tabulate import tabulate
+
 
 def get_beancount_file_path():
     """Placeholder for get_beancount_file_path."""
@@ -11,6 +15,7 @@ def get_beancount_file_path():
     if not beancount_file:
         raise ValueError("BEANCOUNT_FILE environment variable not set.")
     return beancount_file
+
 
 def add_common_arguments(parser):
     """Placeholder for add_common_arguments."""
@@ -24,11 +29,12 @@ def add_common_arguments(parser):
         help='Start date for the query (YYYY-MM-DD).'
     )
     parser.add_argument(
-        '--end', '-E',
+        '--end', '-e',
         help='End date for the query (YYYY-MM-DD).'
     )
     parser.add_argument(
-        '--empty', '-e',
+        '--empty',
+        # '-e',
         action='store_true',
         help='Show accounts with zero balance (for consistency with ledger-cli, no effect on BQL).'
     )
@@ -44,6 +50,7 @@ def add_common_arguments(parser):
         help="Limit the number of results."
     )
 
+
 def run_bql_query(query: str, book: str) -> list:
     """
     Run the BQL query and return results
@@ -58,9 +65,12 @@ def run_bql_query(query: str, book: str) -> list:
 
     return result
 
-def execute_bql_command(create_parser_func, parse_query_func, format_output_func, headers, alignments, **kwargs):
+
+def execute_bql_command(create_parser_func, parse_query_func, format_output_func, 
+                        headers, alignments, **kwargs):
     """
-    Executes a BQL command by parsing arguments, constructing a query, running it, and formatting output.
+    Executes a BQL command by parsing arguments, constructing a query, running it, 
+    and formatting output.
     """
     parser = create_parser_func()
     args = parser.parse_args()
@@ -86,4 +96,5 @@ def execute_bql_command(create_parser_func, parse_query_func, format_output_func
         headers.append("Running Total")
         alignments.append("right")
 
-    print(tabulate(formatted_output, headers=headers, tablefmt="psql", colalign=alignments))
+    print(tabulate(formatted_output, headers=headers, tablefmt="psql", 
+                   colalign=alignments))

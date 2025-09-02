@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# ledger_to_bql_register.py
-
 """
 A command-line tool to translate ledger-cli 'register' command syntax
 into a Beanquery (BQL) query.
@@ -58,7 +55,6 @@ def create_parser():
 
 
 def parse_query(args):
-
     where_clauses = []
     
     # Handle account regular expressions
@@ -91,13 +87,8 @@ def parse_query(args):
             else:
                 sort_keys.append(key)
         query += " ORDER BY " + ", ".join(sort_keys)
-    
-    
 
     return query
-
-
-
 
 
 def format_output(output: list, show_total: bool) -> list:
@@ -150,7 +141,8 @@ def main():
     headers = ["Date", "Account", "Payee", "Narration", "Amount"]
     alignments = ["left", "left", "left", "left", "right"]
 
-    execute_bql_command(create_parser, parse_query, format_output_with_args, headers, alignments)
+    execute_bql_command(create_parser, parse_query, format_output_with_args, 
+                        headers, alignments)
 
 
 if __name__ == '__main__':
