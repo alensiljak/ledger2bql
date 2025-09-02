@@ -73,7 +73,11 @@ def execute_bql_command(create_parser_func, parse_query_func, format_output_func
     and formatting output.
     """
     parser = create_parser_func()
-    args = parser.parse_args()
+    args, remaining_args = parser.parse_known_args()
+    if remaining_args:
+        if not args.account_regex:
+            args.account_regex = []
+        args.account_regex.extend(remaining_args)
 
     book = get_beancount_file_path()
 

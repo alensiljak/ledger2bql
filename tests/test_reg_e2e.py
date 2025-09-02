@@ -140,3 +140,24 @@ def test_reg_sort_by_amount(mock_getenv):
     # # as they have the same total amount. Let's just check they come after groceries.
     # assert groceries_index < salary_index or groceries_index < initial_balance_index
     pass
+
+
+@patch('os.getenv')
+def test_reg_interleaved_args(mock_getenv):
+    # Arrange
+    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+    
+    f = io.StringIO()
+    with redirect_stdout(f):
+        with patch('sys.argv', ['reg', '@Ice Cream Shop', '-b', '2025-02', 'Sweets']):
+            # Act
+            reg_main()
+    
+    # Assert
+    output = f.getvalue()
+    assert "2025-02-01" in output
+    assert "Ice Cream Shop" in output
+    assert "Ice Cream" in output
+    assert "Expenses:Sweets" in output
+    assert "20.00 EUR" in output
+    assert "Grocery Store" not in output
