@@ -23,6 +23,7 @@ Key Mappings:
   - `--end DATE` or `-e DATE`   -> `WHERE date < "DATE"`
   - `--total` or `-t`           -> Calculates a running total column
   - `ACCOUNT_REGEX`           -> `WHERE account ~ "ACCOUNT_REGEX"`
+  - `@DESCRIPTION_REGEX   -> `WHERE description ~ "DESCRIPTION_REGEX"`
 """
 
 import argparse
@@ -38,8 +39,7 @@ def create_parser():
         description="Translate ledger-cli register command arguments to a Beanquery (BQL) query.",
         epilog="""
         Note: The `--empty` flag from ledger-cli is generally not needed for BQL
-        as `bean-query` typically includes all accounts by default. The `-e` flag is
-        supported for consistency but has no effect on the BQL output.
+        as `bean-query` typically includes all accounts by default.
         """
     )
     add_common_arguments(parser)

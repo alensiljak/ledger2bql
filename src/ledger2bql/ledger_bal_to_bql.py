@@ -12,7 +12,7 @@ Example:
 
   # Translate a command for a specific account with a date range.
   # This is equivalent to `ledger bal Expenses --begin 2024-01-01 --end 2024-02-01`
-  python ledger_to_bql.py Expenses -b 2024-01-01 -E 2024-02-01
+  python ledger_to_bql.py Expenses -b 2024-01-01 -e 2024-02-01
 
   # Translate a command with multiple account filters.
   # This is equivalent to `ledger bal income expenses`
@@ -24,6 +24,7 @@ Key Mappings:
   - `--begin DATE` or `-b DATE` -> `WHERE date >= "DATE"`
   - `--end DATE` or `-e DATE`   -> `WHERE date < "DATE"`
   - `ACCOUNT_REGEX`           -> `WHERE account ~ "ACCOUNT_REGEX"`
+  - `@DESCRIPTION_REGEX   -> `WHERE description ~ "DESCRIPTION_REGEX"`
 """
 
 import argparse
