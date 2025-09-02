@@ -81,7 +81,7 @@ def parse_query(args):
     # Handle zero balance filtering
 
     # Build the final query
-    select_clause = "SELECT account, sum(position) as Balance"
+    select_clause = "SELECT account, units(sum(position)) as Balance"
     query = select_clause
 
     if where_clauses:
