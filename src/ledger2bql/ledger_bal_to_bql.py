@@ -28,7 +28,7 @@ Key Mappings:
 """
 
 import argparse
-from .date_parser import parse_date
+from .date_parser import parse_date, parse_date_range
 from .utils import add_common_arguments, execute_bql_command, parse_amount_filter
 
 
@@ -45,7 +45,7 @@ def create_parser():
     add_common_arguments(parser)
 
     parser.add_argument(
-        '--depth', '-d',
+        '--depth', '-D',
         type=int,
         help="Show accounts up to a certain depth (level) in the account tree."
     )
@@ -83,6 +83,14 @@ def parse_query(args):
     if args.end:
         end_date = parse_date(args.end)
         where_clauses.append(f'date < date("{end_date}")')
+    
+    # Handle date range if provided
+    if args.date_range:
+        begin_date, end_date = parse_date_range(args.date_range)
+        if begin_date:
+            where_clauses.append(f'date >= date("{begin_date}")')
+        if end_date:
+            where_clauses.append(f'date < date("{end_date}")')
 
     # Handle amount filters
     if args.amount:

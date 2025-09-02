@@ -35,6 +35,10 @@ def add_common_arguments(parser):
         help='End date for the query (YYYY-MM-DD).'
     )
     parser.add_argument(
+        '--date-range', '-d',
+        help='Date range in format YYYY..YYYY, YYYY-MM..YYYY-MM, or YYYY-MM-DD..YYYY-MM-DD'
+    )
+    parser.add_argument(
         '--empty',
         # '-e',
         action='store_true',

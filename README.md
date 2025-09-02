@@ -108,3 +108,9 @@ SELECT date, account, payee, narration, position WHERE account ~ 'exp' ORDER BY 
 | 2025-03-01 | Expenses:Food   | Grocery Store  | Groceries   | 100.00 EUR |
 +------------+-----------------+----------------+-------------+------------+
 ```
+
+# Filters
+
+The filters have initially matched the Ledger CLI syntax but some have been adjusted for convenience.
+
+For example, a date range syntax has been introduced. Instead of using `-b 2025 -e 2025-06`, you can simply write `-d 2025..2025-06`.
