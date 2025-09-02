@@ -150,3 +150,9 @@ SELECT date, account, payee, narration, position WHERE date >= date("2025-01-01"
 | 2025-01-01 | Equity:Opening-Balances |         | Initial Balance | -1,000.00 EUR |
 +------------+-------------------------+---------+-----------------+---------------+
 ```
+The date range can be used with just a beginning/ending value:
+```sh
+l r -d 2025-03..
+l r -d ..2025-03
+```
+Specifying just a value, without the `..` operator, will use it as a range, as well.
