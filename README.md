@@ -37,6 +37,10 @@ or run
 ```sh
 l ...
 ```
+
+## Tests
+Since the app is using `.env` file for environment variables, make sure that `BEANCOUNT_FILE` is set to the `sample_ledger.bean` in the `tests/` directory.
+
 # Usage
 
 Install the package:

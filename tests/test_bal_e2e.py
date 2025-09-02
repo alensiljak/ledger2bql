@@ -1,3 +1,4 @@
+
 '''
 Tests for the Balance command.
 '''
@@ -71,7 +72,7 @@ def test_bal_default_sort_by_account(mock_getenv):
 
     # Expected order based on sample_ledger.bean and alphabetical sort
     expected_table_output_lines = [
-        "| Assets:Bank:Checking     |  1,900.00 EUR |",
+        "| Assets:Bank:Checking     |  1,884.65 EUR |",
         "| Assets:Cash:Pocket-Money |    -20.00 EUR |",
         "| Equity:Opening-Balances  | -1,000.00 EUR |",
         "| Expenses:Food            |    100.00 EUR |",
@@ -109,7 +110,7 @@ def test_bal_sort_by_balance(mock_getenv):
         "-20.00 EUR", # Assets:Cash:Pocket-Money
         "20.00 EUR", # Expenses:Sweets
         "100.00 EUR", # Expenses:Food
-        "1,900.00 EUR"  # Assets:Bank:Checking
+        "1,884.65 EUR"  # Assets:Bank:Checking
     ]
 
     # Extract balances from the output and check their order
@@ -204,4 +205,21 @@ def test_bal_gratis_empty_account(mock_getenv):
     assert "Assets:Cash:Wallet" not in table_output_with_z
 
 
+@patch('os.getenv')
+def test_bal_units(mock_getenv):
+    # Arrange
+    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
 
+    f = io.StringIO()
+    with redirect_stdout(f):
+        with patch('sys.argv', ['bal', 'Equity:Stocks']):
+            # Act
+            bal_main()
+
+    # Assert
+    output = f.getvalue()
+
+    table_lines = extract_table_data(output.splitlines())
+    table_output = "\n".join(table_lines)
+
+    assert "| Equity:Stocks | 12.00 ABC |" in table_output

@@ -78,16 +78,12 @@ def parse_query(args):
         end_date = parse_date(args.end)
         where_clauses.append(f'date < "{end_date}"')
 
-    # Handle zero balance filtering
-
     # Build the final query
     select_clause = "SELECT account, units(sum(position)) as Balance"
     query = select_clause
 
     if where_clauses:
         query += " WHERE " + " AND ".join(where_clauses)
-
-    
 
     if group_by_clauses:
         query += " GROUP BY " + ", ".join(group_by_clauses)

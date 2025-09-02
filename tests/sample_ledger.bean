@@ -4,6 +4,7 @@
 2025-01-01 open Assets:Bank:Checking EUR
 1900-01-01 open Assets:Cash:Pocket-Money
 2025-01-01 open Equity:Opening-Balances EUR
+1900-01-01 open Equity:Stocks
 1900-01-01 open Income:Salary
 ; expenses
 1900-01-01 open Expenses:Food
@@ -26,3 +27,11 @@
 2025-03-15 txn "Employer" "Salary"
   Assets:Bank:Checking  1000 EUR
   Income:Salary  -1000 EUR
+
+2025-04-01 txn "Buy Stocks"
+  Equity:Stocks 5 ABC { 1.25 EUR }
+  Assets:Bank:Checking 
+
+2025-04-02 txn "Buy more stocks"
+  Equity:Stocks 7 ABC { 1.30 EUR }
+  Assets:Bank:Checking 
