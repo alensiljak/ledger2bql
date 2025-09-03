@@ -235,6 +235,26 @@ l r -d 2025-02    # => 2025-02-01..2025-03-01
 l r -d 2025       # => 2025-01-01..2026-01-01
 ```
 
+### Automatic Date Range Detection
+
+As a convenience feature, you can now omit the `-d` flag when specifying date ranges. Any argument that starts with a 4-digit year (like `2025`) will be automatically treated as a date range.
+
+```sh
+# These are equivalent:
+l b -d 2025
+l b 2025
+
+# These are also equivalent:
+l r -d 2025-03
+l r 2025-03
+
+# Range syntax also works:
+l b -d 2025..2026
+l b 2025..2026
+```
+
+Since Beancount account names cannot start with numbers, there is no ambiguity when automatically detecting date ranges.
+
 ## Currency
 
 Filtering by currency is done via `-c` parameter. The currency spec is case-insensitive. Multiple currencies can be specified, separated by comma, without spaces.
