@@ -68,19 +68,39 @@ def parse_query(args):
     where_clauses = []
     group_by_clauses = []
     account_regexes = []
+    excluded_account_regexes = []
 
     # Handle common arguments
     if args.account_regex:
-        for regex in args.account_regex:
-            if regex.startswith('@'):
+        i = 0
+        while i < len(args.account_regex):
+            regex = args.account_regex[i]
+            if regex == 'not':
+                # The next argument(s) should be excluded
+                i += 1
+                while i < len(args.account_regex):
+                    next_regex = args.account_regex[i]
+                    if next_regex.startswith('@') or next_regex == 'not':
+                        # If we encounter another @ pattern or 'not', stop excluding
+                        i -= 1  # Step back to process this in the next iteration
+                        break
+                    else:
+                        excluded_account_regexes.append(next_regex)
+                        i += 1
+            elif regex.startswith('@'):
                 payee = regex[1:]
                 where_clauses.append(f"description ~ '{payee}'")
             else:
                 account_regexes.append(regex)
+            i += 1
 
     if account_regexes:
         for regex in account_regexes:
             where_clauses.append(f"account ~ '{regex}'")
+    
+    if excluded_account_regexes:
+        for regex in excluded_account_regexes:
+            where_clauses.append(f"NOT (account ~ '{regex}')")
 
     if args.begin:
         begin_date = parse_date(args.begin)

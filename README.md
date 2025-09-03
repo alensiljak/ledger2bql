@@ -188,6 +188,24 @@ SELECT date, account, payee, narration, position WHERE account ~ 'exp' ORDER BY 
 +------------+-----------------+----------------+-------------+------------+
 ```
 
+## Excluding Accounts with "not"
+
+To exclude certain accounts from the results, use the `not` keyword followed by account patterns:
+```sh
+l b not bank
+```
+This will show all accounts except those matching "bank". You can also exclude multiple patterns:
+```sh
+l r not bank cash
+```
+This will show all transactions except those involving bank or cash accounts.
+
+You can combine inclusion and exclusion filters:
+```sh
+l b assets not bank
+```
+This will show only asset accounts that don't match "bank".
+
 ## Amount
 
 Filtering by amount is done via the `-a` or `--amount` parameter. This allows you to filter transactions based on their amount values.
