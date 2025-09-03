@@ -324,4 +324,5 @@ SELECT date, account, payee, narration, position WHERE currency IN ('ABC', 'BAM'
 ```
 
 # License
-See [[LICENSE]].
+
+See [license](LICENSE) file.
