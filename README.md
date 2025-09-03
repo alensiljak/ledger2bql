@@ -188,6 +188,36 @@ SELECT date, account, payee, narration, position WHERE account ~ 'exp' ORDER BY 
 +------------+-----------------+----------------+-------------+------------+
 ```
 
+## Amount
+
+Filtering by amount is done via the `-a` or `--amount` parameter. This allows you to filter transactions based on their amount values.
+
+The amount filter supports the following operators:
+- `>` - Greater than
+- `<` - Less than
+- `>=` - Greater than or equal to
+- `<=` - Less than or equal to
+- `=` - Equal to (default if no operator is specified)
+
+You can also specify a currency code after the amount to filter by both amount and currency.
+
+```sh
+# Show transactions with amounts greater than 50 (in any currency)
+l r -a ">50"
+
+# Show transactions with amounts greater than 50 EUR
+l r -a ">50EUR"
+
+# Show transactions with amounts less than or equal to 100
+l r -a "<=100"
+
+# Show transactions with amounts equal to 25 BAM
+l r -a "=25BAM"
+l r -a "25BAM"  # equivalent to above (default is =)
+```
+
+Note: The amount filter values must be quoted to prevent shell interpretation of the operators.
+
 ## Description / Payee
 
 Similar to Ledger's Payee spec, `@some_store`, the `@` syntax is available. For Beancount, however, it is more useful to search through the Description, which is a combination of Payee and Narration fields.
@@ -274,3 +304,6 @@ SELECT date, account, payee, narration, position WHERE currency IN ('ABC', 'BAM'
 | 2025-05-01 | Assets:Cash:BAM | Supermarket | drinks          | -25.00 BAM |
 +------------+-----------------+-------------+-----------------+------------+
 ```
+
+# License
+See [[LICENSE]].
