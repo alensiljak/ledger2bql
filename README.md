@@ -42,7 +42,10 @@ or run
 l ...
 ```
 
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+
 ## Tests
+
 All tests use the `.env` file in the `tests/` directory to locate the sample ledger file. Make sure this file is properly configured with the correct path to `sample_ledger.bean`.
 
 # Usage
