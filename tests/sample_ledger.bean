@@ -5,8 +5,9 @@
 plugin "beancount.plugins.implicit_prices"
 
 ; accounts
-1900-01-01 open Assets:Bank:Checking EUR
 1900-01-01 open Assets:Bank:Bank03581 CHF
+1900-01-01 open Assets:Bank:Checking EUR
+1900-01-01 open Assets:Bank:Savings EUR
 1900-01-01 open Assets:Cash:Pocket-Money EUR
 1900-01-01 open Assets:Cash:BAM BAM
 1900-01-01 open Assets:Cash:USD USD
@@ -18,6 +19,8 @@ plugin "beancount.plugins.implicit_prices"
 1900-01-01 open Expenses:Food
 1900-01-01 open Expenses:Sweets
 1900-01-01 open Expenses:Transport
+1900-01-01 open Expenses:Transport:Bus
+1900-01-01 open Expenses:Transport:Train
 
 ; prices
 
@@ -63,3 +66,15 @@ plugin "beancount.plugins.implicit_prices"
 2025-07-15 txn "Anonymous Org." "Illicit money"
   Assets:Bank:Bank03581  3000 CHF
   Income:Other
+
+2025-08-01 txn "Transfer to savings"
+  Assets:Bank:Savings  500 EUR
+  Assets:Bank:Checking
+
+2025-08-15 txn "Holiday" "Bus"
+  Expenses:Transport:Bus  10 EUR
+  Assets:Bank:Checking
+
+2025-08-16 txn "Holiday" "Bus"
+  Expenses:Transport:Train  15 EUR
+  Assets:Bank:Checking

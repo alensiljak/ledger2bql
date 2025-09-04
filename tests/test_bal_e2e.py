@@ -61,7 +61,7 @@ def test_bal_default_sort_by_account(mock_getenv):
 
     # Expected order based on sample_ledger.bean and alphabetical sort
     expected_table_output_lines = [
-        "| Assets:Bank:Checking     |         1,884.65 EUR |",
+        "| Assets:Bank:Checking     |         1,359.65 EUR |",
         "| Assets:Cash:BAM          |           -25.00 BAM |",
         "| Assets:Cash:Pocket-Money |           -20.00 EUR |",
         "| Assets:Cash:USD          |            -7.00 USD |",
@@ -99,7 +99,7 @@ def test_bal_sort_by_balance(mock_getenv):
         "-20.00 EUR", # Assets:Cash:Pocket-Money
         "20.00 EUR", # Expenses:Sweets
         "100.00 EUR", # Expenses:Food
-        "1,884.65 EUR"  # Assets:Bank:Checking
+        "1,359.65 EUR"  # Assets:Bank:Checking
     ]
 
     # Extract balances from the output and check their order

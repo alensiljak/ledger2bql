@@ -30,7 +30,7 @@ def test_bal_currency_filter_eur(mock_getenv):
     table_output = "\n".join(table_lines)
     
     # Should show accounts with EUR currency
-    assert "| Assets:Bank:Checking     |  1,884.65 EUR |" in table_output
+    assert "| Assets:Bank:Checking     |  1,359.65 EUR |" in table_output
     assert "| Assets:Cash:Pocket-Money |    -20.00 EUR |" in table_output
     assert "| Equity:Opening-Balances  | -1,000.00 EUR |" in table_output
     assert "| Expenses:Food            |    100.00 EUR |" in table_output
@@ -177,7 +177,7 @@ def test_bal_multiple_currency_filter(mock_getenv):
     table_output = "\n".join(table_lines)
     
     # Should show accounts with EUR currency
-    assert "| Assets:Bank:Checking     |         1,884.65 EUR |" in table_output
+    assert "| Assets:Bank:Checking     |         1,359.65 EUR |" in table_output
     assert "| Assets:Cash:Pocket-Money |           -20.00 EUR |" in table_output
     assert "| Equity:Opening-Balances  |        -1,000.00 EUR |" in table_output
     assert "| Expenses:Sweets          |            20.00 EUR |" in table_output
