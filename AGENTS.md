@@ -22,6 +22,8 @@ Do not stage or commit code to the Git repository. The user will do this after r
 
 If you run into any complex or far-reaching problems, consult with the developer before trying to solve them. This may save time and direct you in finding the correct solution. It also helps to improve the instructions.
 
+There are often problems with adding text to files. In this case, if the retry does not succeed, write the content into a separate, temporary file and notify the user, who will move that generated content into the correct file.
+
 # Running Python
 To run Python scripts, use `uv`:
 ```sh

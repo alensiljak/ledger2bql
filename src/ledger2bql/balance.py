@@ -161,6 +161,8 @@ def format_output(output: list, args) -> list:
         
         # First, collect all individual account balances and compute parent balances
         individual_rows = {}
+        # Keep track of which accounts exist as individual accounts
+        individual_accounts = set()
         
         for row in list(output): # Ensure output is a list of lists
             if not row:
@@ -168,6 +170,7 @@ def format_output(output: list, args) -> list:
             
             account_name = row[0]
             individual_rows[account_name] = row
+            individual_accounts.add(account_name)
             
             # Compute balances for all parent accounts
             parts = account_name.split(':')
@@ -219,6 +222,52 @@ def format_output(output: list, args) -> list:
                             # Add to parent balance
                             parent_balances[parent_account][currency_str] += number
         
+        # Now, for accounts that exist as individual accounts, also add their own balances to their aggregated balances
+        for account_name in individual_accounts:
+            # Handle currency conversion and balance aggregation for the account's own balance
+            row = individual_rows[account_name]
+            if args.exchange:
+                # When exchange currency is specified, we have an additional column with converted values
+                balance_inventory = row[1]  # Original balance
+                
+                # Sum original balances by currency
+                if hasattr(balance_inventory, 'items'):  # It's an inventory with multiple currencies
+                    for currency, amount in balance_inventory.items():
+                        # Extract currency string
+                        if isinstance(currency, tuple):
+                            currency_str = currency[0]
+                        else:
+                            currency_str = currency
+                        
+                        # Extract number (handle Decimal)
+                        number = amount.units.number
+                        
+                        # Add to the account's own aggregated balance
+                        parent_balances[account_name][currency_str] += number
+                
+                # For converted balances, we need to get the converted value for this specific row
+                converted_inventory = row[2]  # Converted balance
+                converted_amount = converted_inventory.get_currency_units(args.exchange)
+                parent_converted[account_name] += converted_amount.number
+            else:
+                # The balance is always the last element in the row tuple
+                balance_inventory = row[-1]
+                
+                # Sum balances by currency
+                if hasattr(balance_inventory, 'items'):  # It's an inventory with multiple currencies
+                    for currency, amount in balance_inventory.items():
+                        # Extract currency string
+                        if isinstance(currency, tuple):
+                            currency_str = currency[0]
+                        else:
+                            currency_str = currency
+                        
+                        # Extract number (handle Decimal)
+                        number = amount.units.number
+                        
+                        # Add to the account's own aggregated balance
+                        parent_balances[account_name][currency_str] += number
+        
         # Create combined output with both individual accounts and parent aggregates
         combined_output = []
         
@@ -231,11 +280,11 @@ def format_output(output: list, args) -> list:
         sorted_accounts = sorted(all_accounts)
         
         for account_name in sorted_accounts:
-            # If this is an individual account, use its original data
-            if account_name in individual_rows:
-                combined_output.append(individual_rows[account_name])
-            else:
-                # This is a parent account that only exists as an aggregate
+            # For all accounts, use the aggregated balances which include:
+            # 1. The account's own balance (if it exists as an individual account)
+            # 2. The sum of all its children's balances
+            if account_name in parent_balances:
+                # This account has aggregated balances (either it's a parent or it has children)
                 currencies = parent_balances[account_name]
                 if args.exchange:
                     # Create a mock inventory for the original balances
@@ -302,6 +351,9 @@ def format_output(output: list, args) -> list:
                 
                     row = (account_name, MockInventory(currencies))
                 combined_output.append(row)
+            else:
+                # This is a leaf account with no children, use its original data
+                combined_output.append(individual_rows[account_name])
         
         output = combined_output
     

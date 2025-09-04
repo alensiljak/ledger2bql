@@ -75,6 +75,6 @@ plugin "beancount.plugins.implicit_prices"
   Expenses:Transport:Bus  10 EUR
   Assets:Bank:Checking
 
-2025-08-16 txn "Holiday" "Bus"
+2025-08-16 txn "Holiday" "Train"
   Expenses:Transport:Train  15 EUR
   Assets:Bank:Checking
