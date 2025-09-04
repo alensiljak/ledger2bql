@@ -2,12 +2,14 @@
 
 ; accounts
 1900-01-01 open Assets:Bank:Checking EUR
+1900-01-01 open Assets:Bank:Bank03581 CHF
 1900-01-01 open Assets:Cash:Pocket-Money EUR
 1900-01-01 open Assets:Cash:BAM BAM
 1900-01-01 open Assets:Cash:USD USD
 2025-01-01 open Equity:Opening-Balances EUR
 1900-01-01 open Equity:Stocks
 1900-01-01 open Income:Salary
+1900-01-01 open Income:Other
 ; expenses
 1900-01-01 open Expenses:Food
 1900-01-01 open Expenses:Sweets
@@ -52,3 +54,7 @@
 2025-06-04 txn "Metro" "public transport"
   Expenses:Transport 7 USD
   Assets:Cash:USD
+
+2025-07-15 txn "Anonymous Org." "Illicit money"
+  Assets:Bank:Bank03581  3000 CHF
+  Income:Other

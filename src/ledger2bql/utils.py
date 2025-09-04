@@ -38,7 +38,7 @@ def add_common_arguments(parser):
     )
     parser.add_argument(
         '--date-range', '-d',
-        help='Date range in format YYYY..YYYY, YYYY-MM..YYYY-MM, or YYYY-MM-DD..YYYY-MM-DD'
+        help='Date range in format YYYY..YYYY, YYYY-MM..YYYY-MM, or YYYY-MM-DD..YYYY-MM-DD. Shorthand syntax: YYYY, YYYY-MM, YYYY-MM-DD, YYYY.., ..YYYY, etc.'
     )
     parser.add_argument(
         '--empty',
