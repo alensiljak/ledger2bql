@@ -67,6 +67,11 @@ def add_common_arguments(parser):
         help='Filter by currency. E.g. EUR or EUR,BAM'
     )
     parser.add_argument(
+        '--exchange', '-X',
+        type=str.upper,
+        help='Convert all amounts to the specified currency.'
+    )
+    parser.add_argument(
         '--total', '-T',
         action='store_true',
         help='Show a grand total row at the end of the balance report or a running total column in the register report.'
@@ -140,6 +145,19 @@ def execute_bql_command(create_parser_func, parse_query_func, format_output_func
     if hasattr(args, 'total') and args.total and command_type == 'reg':
         headers.append("Running Total")
         alignments.append("right")
+    
+    # For commands with --exchange, add a Converted column
+    if hasattr(args, 'exchange') and args.exchange:
+        if command_type == 'bal':
+            headers.append(f"Total ({args.exchange})")
+            alignments.append("right")
+        elif command_type == 'reg':
+            headers.append(f"Amount ({args.exchange})")
+            alignments.append("right")
+            # If total is also requested, add a converted total column
+            if hasattr(args, 'total') and args.total:
+                headers.append(f"Total ({args.exchange})")
+                alignments.append("right")
 
     print(tabulate(formatted_output, headers=headers, tablefmt="psql", 
                    colalign=alignments))

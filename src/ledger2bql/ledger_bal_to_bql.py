@@ -135,7 +135,11 @@ def parse_query(args):
             where_clauses.append(f"currency = '{args.currency}'")
 
     # Build the final query
-    select_clause = "SELECT account, units(sum(position)) as Balance"
+    if args.exchange:
+        # When exchange currency is specified, convert all positions to that currency
+        select_clause = f"SELECT account, units(sum(position)) as Balance, convert(sum(position), '{args.exchange}') as Converted"
+    else:
+        select_clause = "SELECT account, units(sum(position)) as Balance"
     query = select_clause
 
     if where_clauses:
@@ -168,6 +172,7 @@ def format_output(output: list, args) -> list:
     
     # Initialize grand total dictionary to accumulate balances by currency
     grand_total = {}
+    converted_total = 0
     
     for row in list(output): # Ensure output is a list of lists
         if not row:
@@ -181,49 +186,117 @@ def format_output(output: list, args) -> list:
 
         if args.zero and row[-1].is_empty():
             continue
-        # The balance is always the last element in the row tuple
-        balance_inventory = row[-1]
-        
-        # An Inventory object can contain multiple currencies. We need to iterate
-        # through its items, which are (currency, Position) pairs.
-        balance_parts = []
-        for currency, amount in balance_inventory.items():
-            # Check if the currency is a tuple and extract the string
-            if isinstance(currency, tuple):
-                currency_str = currency[0]
-            else:
-                currency_str = currency
-
-            # Correctly access the number from the Position object's `units`
-            formatted_value = "{:,.2f}".format(amount.units.number)
             
-            balance_parts.append(f"{formatted_value} {currency_str}")
+        # Handle currency conversion
+        if args.exchange:
+            # When exchange currency is specified, we have an additional column with converted values
+            balance_inventory = row[1]  # Original balance
+            converted_inventory = row[2]  # Converted balance
+            
+            # Format original balance
+            balance_parts = []
+            for currency, amount in balance_inventory.items():
+                # Check if the currency is a tuple and extract the string
+                if isinstance(currency, tuple):
+                    currency_str = currency[0]
+                else:
+                    currency_str = currency
+
+                # Correctly access the number from the Position object's `units`
+                formatted_value = "{:,.2f}".format(amount.units.number)
+                
+                balance_parts.append(f"{formatted_value} {currency_str}")
+            
+            formatted_balance = " ".join(balance_parts)
+            
+            # Format converted balance
+            converted_amount = converted_inventory.get_currency_units(args.exchange)
+            formatted_converted = "{:,.2f} {}".format(converted_amount.number, converted_amount.currency)
             
             # Accumulate for grand total
             if args.total:
-                if currency_str in grand_total:
-                    grand_total[currency_str] += amount.units.number
+                # Accumulate original currencies
+                for currency, amount in balance_inventory.items():
+                    # Check if the currency is a tuple and extract the string
+                    if isinstance(currency, tuple):
+                        currency_str = currency[0]
+                    else:
+                        currency_str = currency
+                    
+                    if currency_str in grand_total:
+                        grand_total[currency_str] += amount.units.number
+                    else:
+                        grand_total[currency_str] = amount.units.number
+                
+                # Accumulate converted amount
+                converted_total += converted_amount.number
+            
+            new_row = list(row)
+            new_row[1] = formatted_balance
+            new_row[2] = formatted_converted
+            formatted_output.append(tuple(new_row))
+        else:
+            # The balance is always the last element in the row tuple
+            balance_inventory = row[-1]
+            
+            # An Inventory object can contain multiple currencies. We need to iterate
+            # through its items, which are (currency, Position) pairs.
+            balance_parts = []
+            for currency, amount in balance_inventory.items():
+                # Check if the currency is a tuple and extract the string
+                if isinstance(currency, tuple):
+                    currency_str = currency[0]
                 else:
-                    grand_total[currency_str] = amount.units.number
-        
-        formatted_balance = " ".join(balance_parts)
-        
-        new_row = list(row)
-        new_row[-1] = formatted_balance
-        formatted_output.append(tuple(new_row))
+                    currency_str = currency
+
+                # Correctly access the number from the Position object's `units`
+                formatted_value = "{:,.2f}".format(amount.units.number)
+                
+                balance_parts.append(f"{formatted_value} {currency_str}")
+                
+                # Accumulate for grand total
+                if args.total:
+                    if currency_str in grand_total:
+                        grand_total[currency_str] += amount.units.number
+                    else:
+                        grand_total[currency_str] = amount.units.number
+            
+            formatted_balance = " ".join(balance_parts)
+            
+            new_row = list(row)
+            new_row[-1] = formatted_balance
+            formatted_output.append(tuple(new_row))
 
     # Add grand total row if requested
-    if args.total and grand_total:
-        # Format the grand total balances
-        total_parts = []
-        for currency, amount in grand_total.items():
-            formatted_value = "{:,.2f}".format(amount)
-            total_parts.append(f"{formatted_value} {currency}")
-        
-        formatted_total = " ".join(total_parts)
-        # Add a separator row and the total row
-        formatted_output.append(("-------------------", "-------------------"))
-        formatted_output.append(("Total", formatted_total))
+    if args.total and (grand_total or args.exchange):
+        if args.exchange:
+            # Format the grand total balances
+            total_parts = []
+            for currency, amount in grand_total.items():
+                formatted_value = "{:,.2f}".format(amount)
+                total_parts.append(f"{formatted_value} {currency}")
+            
+            formatted_total = " ".join(total_parts)
+            formatted_converted_total = "{:,.2f} {}".format(converted_total, args.exchange)
+            
+            # Add a separator row and the total row
+            if args.exchange:
+                formatted_output.append(("-------------------", "-------------------", "-------------------"))
+                formatted_output.append(("Total", formatted_total, formatted_converted_total))
+            else:
+                formatted_output.append(("-------------------", "-------------------"))
+                formatted_output.append(("Total", formatted_total))
+        else:
+            # Format the grand total balances
+            total_parts = []
+            for currency, amount in grand_total.items():
+                formatted_value = "{:,.2f}".format(amount)
+                total_parts.append(f"{formatted_value} {currency}")
+            
+            formatted_total = " ".join(total_parts)
+            # Add a separator row and the total row
+            formatted_output.append(("-------------------", "-------------------"))
+            formatted_output.append(("Total", formatted_total))
 
     return formatted_output
 

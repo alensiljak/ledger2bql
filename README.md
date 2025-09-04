@@ -14,6 +14,8 @@ The purpose of this project, a simple CLI utility, is to accept a Ledger-like sy
 
 This is very convenient for quick lookups and everyday insights into your financial data.
 
+For more background on Ledger's query syntax, see the [docs](https://ledger-cli.org/doc/ledger3.html).
+
 # Development
 
 Clone the repository.
@@ -323,6 +325,68 @@ SELECT date, account, payee, narration, position WHERE currency IN ('ABC', 'BAM'
 +------------+-----------------+-------------+-----------------+------------+
 ```
 
+## Exchange
+
+Converting all amounts to a specified currency is done via the `-X` or `--exchange` parameter. This works similarly to Ledger CLI's `-X` option, converting all transaction amounts and running totals to the target currency using Beancount's price database.
+
+The currency code is case-insensitive and will be automatically converted to uppercase. When a conversion rate is not available for a particular currency pair, the converted amount will show as 0 in the target currency.
+
+```sh
+# Convert all amounts to USD
+D:\src\ledger2bql>l r -X USD
+
+Your BQL query is:
+SELECT date, account, payee, narration, position, convert(position, 'USD') as converted_position
+
++------------+--------------------------+----------------+------------------+---------------+----------------+
+| Date       | Account                  | Payee          | Narration        |        Amount |   Amount (USD) |
+|------------+--------------------------+----------------+------------------+---------------+----------------|
+| 2025-01-01 | Assets:Bank:Checking     |                | Initial Balance  |  1,000.00 EUR |   1,132.50 USD |
+| 2025-01-01 | Equity:Opening-Balances  |                | Initial Balance  | -1,000.00 EUR |  -1,132.50 USD |
+| 2025-05-01 | Expenses:Food            | Supermarket    | drinks           |     25.00 BAM |      25.00 BAM |  # No conversion rate available
+| 2025-06-04 | Expenses:Transport       | Metro          | public transport |      7.00 USD |       7.00 USD |
++------------+--------------------------+----------------+------------------+---------------+----------------+
+
+# Convert amounts and show running totals in both original and target currencies
+D:\src\ledger2bql>l r -X usd -T  # lowercase currency is automatically converted to uppercase
+
+Your BQL query is:
+SELECT date, account, payee, narration, position, convert(position, 'USD') as converted_position
+
++------------+--------------------------+----------------+------------------+---------------+----------------+-----------------+---------------+
+| Date       | Account                  | Payee          | Narration        |        Amount |   Amount (USD) |   Running Total |   Total (USD) |
+|------------+--------------------------+----------------+------------------+---------------+----------------+-----------------+---------------|
+| 2025-01-01 | Assets:Bank:Checking     |                | Initial Balance  |  1,000.00 EUR |   1,132.50 USD |    1,000.00 EUR |  1,132.50 USD |
+| 2025-01-01 | Equity:Opening-Balances  |                | Initial Balance  | -1,000.00 EUR |  -1,132.50 USD |        0.00 EUR |      0.00 USD |
+| 2025-05-01 | Expenses:Food            | Supermarket    | drinks           |     25.00 BAM |      25.00 BAM |       25.00 BAM |      0.00 USD |  # BAM not converted, USD total unchanged
+| 2025-06-04 | Expenses:Transport       | Metro          | public transport |      7.00 USD |       7.00 USD |        7.00 USD |      7.00 USD |  # USD transaction updates USD total
++------------+--------------------------+----------------+------------------+---------------+----------------+-----------------+---------------+
+```
+
+For balance reports, the converted totals are shown in the "Total (USD)" column:
+
+```sh
+D:\src\ledger2bql>l b -X usd
+
+Your BQL query is:
+SELECT account, units(sum(position)) as Balance, convert(sum(position), 'USD') as Converted ORDER BY account ASC
+
++--------------------------+----------------------+---------------+
+| Account                  |              Balance |   Total (USD) |
+|--------------------------+----------------------+---------------|
+| Assets:Bank:Checking     |         1,884.65 EUR |  2,134.37 USD |
+| Assets:Cash:BAM          |           -25.00 BAM |      0.00 USD |
+| Assets:Cash:Pocket-Money |           -20.00 EUR |    -22.65 USD |
+| Assets:Cash:USD          |            -7.00 USD |     -7.00 USD |
+| Equity:Opening-Balances  |        -1,000.00 EUR | -1,132.50 USD |
+| Equity:Stocks            |            12.00 ABC |      0.00 USD |
+| Expenses:Food            | 100.00 EUR 25.00 BAM |    113.25 USD |
+| Expenses:Sweets          |            20.00 EUR |     22.65 USD |
+| Expenses:Transport       |             7.00 USD |      7.00 USD |
+| Income:Salary            |        -1,000.00 EUR | -1,132.50 USD |
++--------------------------+----------------------+---------------+
+```
+
 # License
 
-See [license](LICENSE) file.
+See the [license](LICENSE) file.

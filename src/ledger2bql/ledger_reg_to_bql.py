@@ -119,7 +119,11 @@ def parse_query(args):
             where_clauses.append(f"currency = '{args.currency}'")
 
     # Build the final query
-    select_clause = "SELECT date, account, payee, narration, position"
+    if args.exchange:
+        # When exchange currency is specified, convert positions to that currency
+        select_clause = f"SELECT date, account, payee, narration, position, convert(position, '{args.exchange}') as converted_position"
+    else:
+        select_clause = "SELECT date, account, payee, narration, position"
     query = select_clause
 
     if where_clauses:
@@ -143,34 +147,84 @@ def format_output(output: list, args) -> list:
     """Formats the raw output from the BQL query into a pretty-printable list."""
     formatted_output = []
     running_total = defaultdict(Decimal)
+    converted_running_total = Decimal('0')
 
     for row in output:
-        date, account, payee, narration, position = row
-        
-        # Access the amount from the position object
-        transaction_amount = position.units.number.normalize()
-        transaction_currency = position.units.currency
-        
-        # Calculate running total
-        running_total[transaction_currency] += transaction_amount
+        if args.exchange:
+            # When exchange currency is specified, we have an additional column with converted position
+            date, account, payee, narration, position, converted_position = row
+            
+            # Access the amount from the position object
+            transaction_amount = position.units.number.normalize()
+            transaction_currency = position.units.currency
+            
+            # Calculate running total
+            running_total[transaction_currency] += transaction_amount
 
-        # Format the transaction amount
-        formatted_transaction_amount = "{:,.2f} {}".format(transaction_amount, transaction_currency)
-        
-        # Format the running total
-        formatted_running_total = "{:,.2f} {}".format(running_total[transaction_currency], transaction_currency)
-        
-        # Assemble the row
-        new_row = [
-            date,
-            account,
-            payee,
-            narration,
-            formatted_transaction_amount
-        ]
+            # Format the transaction amount
+            formatted_transaction_amount = "{:,.2f} {}".format(transaction_amount, transaction_currency)
+            
+            # Format the converted amount
+            converted_amount = converted_position
+            formatted_converted_amount = "{:,.2f} {}".format(converted_amount.number, converted_amount.currency)
+            
+            # Calculate converted running total
+            # Only add to the converted running total if the conversion was successful
+            if converted_amount.currency == args.exchange:
+                converted_running_total += converted_amount.number
+            
+            # Format the running totals
+            formatted_running_total = "{:,.2f} {}".format(running_total[transaction_currency], transaction_currency)
+            formatted_converted_running_total = "{:,.2f} {}".format(converted_running_total, args.exchange)
+            
+            # Assemble the row
+            new_row = [
+                date,
+                account,
+                payee,
+                narration,
+                formatted_transaction_amount
+            ]
+            
+            # Add running total if total is requested
+            if args.total:
+                new_row.append(formatted_running_total)
+                
+            # Add converted amount if exchange is requested
+            if args.exchange:
+                new_row.append(formatted_converted_amount)
+                
+            # Add converted running total if both exchange and total are requested
+            if args.exchange and args.total:
+                new_row.append(formatted_converted_running_total)
+        else:
+            date, account, payee, narration, position = row
+            
+            # Access the amount from the position object
+            transaction_amount = position.units.number.normalize()
+            transaction_currency = position.units.currency
+            
+            # Calculate running total
+            running_total[transaction_currency] += transaction_amount
 
-        if args.total:
-            new_row.append(formatted_running_total)
+            # Format the transaction amount
+            formatted_transaction_amount = "{:,.2f} {}".format(transaction_amount, transaction_currency)
+            
+            # Format the running total
+            formatted_running_total = "{:,.2f} {}".format(running_total[transaction_currency], transaction_currency)
+            
+            # Assemble the row
+            new_row = [
+                date,
+                account,
+                payee,
+                narration,
+                formatted_transaction_amount
+            ]
+            
+            # Add running total if total is requested
+            if args.total:
+                new_row.append(formatted_running_total)
         
         formatted_output.append(new_row)
 
@@ -179,17 +233,11 @@ def format_output(output: list, args) -> list:
 
 def main():
     """Runs the given query and prints the output in a pretty format."""
-    def format_output_with_args(output, args):
-        formatted = format_output(output, args)
-        if args.limit:
-            formatted = formatted[:args.limit]
-        return formatted
-
     # Determine headers and alignments for the table
     headers = ["Date", "Account", "Payee", "Narration", "Amount"]
     alignments = ["left", "left", "left", "left", "right"]
 
-    execute_bql_command(create_parser, parse_query, format_output_with_args, 
+    execute_bql_command(create_parser, parse_query, format_output, 
                         headers, alignments, command_type='reg')
 
 
