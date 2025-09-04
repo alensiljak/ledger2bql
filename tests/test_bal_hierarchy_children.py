@@ -14,14 +14,13 @@ def test_bal_hierarchy_expenses_transport_with_children():
     # Assert
     assert result.exit_code == 0
     table_lines = extract_table_data(result.output.splitlines())
-    table_output = "\n".join(table_lines)
 
     # Check that Expenses:Transport (parent) shows aggregated balance including children
-    assert "| Expenses:Transport       |" in table_output
+    assert "| Expenses:Transport       |" in "\n".join(table_lines)
     
     # Check that children are also shown
-    assert "| Expenses:Transport:Bus   |" in table_output
-    assert "| Expenses:Transport:Train |" in table_output
+    assert "| Expenses:Transport:Bus   |" in "\n".join(table_lines)
+    assert "| Expenses:Transport:Train |" in "\n".join(table_lines)
     
     # The parent Expenses:Transport should show the combined balance of all its children
     # From the sample ledger:
@@ -39,7 +38,6 @@ def test_bal_hierarchy_expenses_transport_verify_aggregation_values():
     # Assert
     assert result.exit_code == 0
     table_lines = extract_table_data(result.output.splitlines())
-    table_output = "\n".join(table_lines)
     
     # Find the rows for Expenses:Transport and its children
     transport_row = None
@@ -76,5 +74,5 @@ def test_bal_hierarchy_expenses_transport_verify_aggregation_values():
     assert "15.00 EUR" in transport_train_row
     
     # Verify the math: Parent should equal sum of children plus its own transactions
-    # EUR: 10.00 + 15.00 = 25.00 \u2713
-    # USD: 7.00 (from parent's own transaction) \u2713
+    # EUR: 10.00 + 15.00 = 25.00 ✓
+    # USD: 7.00 (from parent's own transaction) ✓

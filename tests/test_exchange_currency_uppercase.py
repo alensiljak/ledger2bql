@@ -1,7 +1,6 @@
 """
 Tests for the exchange currency uppercasing feature.
 """
-import os
 
 from tests.test_utils import run_bal_command, run_reg_command
 

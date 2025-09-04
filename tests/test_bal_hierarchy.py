@@ -1,7 +1,6 @@
 """
 Tests for the Balance command with hierarchy option.
 """
-import os
 
 from tests.test_utils import run_bal_command, extract_table_data
 

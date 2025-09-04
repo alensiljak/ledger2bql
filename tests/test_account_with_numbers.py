@@ -1,19 +1,20 @@
 """
 Tests for accounts with numbers in their names.
 """
-import sys
+import io
 import os
+import sys
+from contextlib import redirect_stdout
+
+# Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 # Load environment variables from the tests directory
 from dotenv import load_dotenv
+from ledger2bql.main import main as main_entry
+
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(dotenv_path, override=True)
-
-import io
-from contextlib import redirect_stdout
-
-from ledger2bql.main import main as main_entry
 
 
 def test_account_with_numbers_not_treated_as_date():
@@ -113,6 +114,6 @@ def test_explicit_date_still_works():
 
 if __name__ == "__main__":
     test_account_with_numbers_not_treated_as_date()
-    test_account_starting_with_year_not_treated_as_date()
+    test_account_containing_year_not_treated_as_date()  # Fixed function name
     test_explicit_date_still_works()
     print("All account with numbers tests passed!")
