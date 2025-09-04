@@ -200,7 +200,7 @@ SELECT date, account, payee, narration, position WHERE account ~ 'exp' ORDER BY 
 +------------+-----------------+----------------+-------------+------------+
 ```
 
-## Excluding Accounts with "not"
+### Excluding Accounts with "not"
 
 To exclude certain accounts from the results, use the `not` keyword followed by account patterns:
 ```sh
@@ -217,6 +217,30 @@ You can combine inclusion and exclusion filters:
 l b assets not bank
 ```
 This will show only asset accounts that don't match "bank".
+
+### Advanced Account Filtering
+
+You can use special syntax to match accounts more precisely:
+
+- `^pattern` - Matches accounts that **start with** the specified pattern
+  ```sh
+  l b ^Assets:Bank
+  ```
+  This will show all accounts that start with "Assets:Bank", such as "Assets:Bank:Checking" and "Assets:Bank:Savings".
+
+- `pattern$` - Matches accounts that **end with** the specified pattern
+  ```sh
+  l b Checking$
+  ```
+  This will show all accounts that end with "Checking", regardless of what comes before it.
+
+- `^pattern$` - Matches accounts that **exactly match** the specified pattern
+  ```sh
+  l b ^Assets:Bank:Checking$
+  ```
+  This will show only the exact account "Assets:Bank:Checking", excluding any other accounts.
+
+These patterns can be combined with the `not` keyword for exclusion filtering as well.
 
 ## Amount
 
