@@ -1,10 +1,8 @@
 '''
 Shared utilities.
 '''
-import argparse
 import os
 import re
-import sys
 from decimal import Decimal
 import beanquery
 from tabulate import tabulate

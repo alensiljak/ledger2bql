@@ -1,11 +1,8 @@
 '''
 Tests for the Register command with total option.
 '''
-import os
-from unittest.mock import patch
 
-from tests.test_utils import run_reg_command, extract_table_data
-
+from tests.test_utils import run_reg_command
 
 def extract_full_table(output_lines):
     """Extract the full table including headers and data rows."""
@@ -28,11 +25,7 @@ def extract_full_table(output_lines):
     
     return table_data
 
-
-@patch('os.getenv')
-def test_reg_with_total(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+def test_reg_with_total():
     
     # Act
     result = run_reg_command(['--total'])
@@ -55,11 +48,7 @@ def test_reg_with_total(mock_getenv):
     assert "Assets:Bank:Checking" in table_output
     assert "Expenses:Sweets" in table_output
 
-
-@patch('os.getenv')
-def test_reg_with_total_flag_short(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+def test_reg_with_total_flag_short():
     
     # Act
     result = run_reg_command(['-T'])

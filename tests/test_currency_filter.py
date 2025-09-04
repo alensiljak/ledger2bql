@@ -11,9 +11,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 def test_currency_filter():
     """Test the currency filter functionality."""
-    # Set the BEANCOUNT_FILE environment variable
+    # Use the BEANCOUNT_FILE environment variable from .env
     env = os.environ.copy()
-    env['BEANCOUNT_FILE'] = os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
     
     # Test 1: Run balance command with EUR currency filter
     print("Testing balance command with EUR currency filter...")

@@ -1,17 +1,10 @@
 '''
 Tests for the Balance command.
 '''
-import os
-from unittest.mock import patch
 
 from tests.test_utils import run_bal_command, extract_table_data
 
-
-@patch('os.getenv')
-def test_bal_no_args(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-    
+def test_bal_no_args():
     # Act
     result = run_bal_command()
     
@@ -25,12 +18,7 @@ def test_bal_no_args(mock_getenv):
     assert "Expenses:Sweets" in table_output
     assert "20.00 EUR" in table_output
 
-
-@patch('os.getenv')
-def test_bal_filter_by_payee(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-    
+def test_bal_filter_by_payee():
     # Act
     result = run_bal_command(['@Grocery Store'])
     
@@ -45,12 +33,7 @@ def test_bal_filter_by_payee(mock_getenv):
     assert "100.00 EUR" in table_output
     assert "Assets:Cash:Pocket-Money" not in table_output
 
-
-@patch('os.getenv')
-def test_bal_default_sort_by_account(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-
+def test_bal_default_sort_by_account():
     # Act
     result = run_bal_command()
 
@@ -77,12 +60,7 @@ def test_bal_default_sort_by_account(mock_getenv):
     for expected_line in expected_table_output_lines:
         assert expected_line in table_output
 
-
-@patch('os.getenv')
-def test_bal_sort_by_balance(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-
+def test_bal_sort_by_balance():
     # Act
     result = run_bal_command(['--sort', 'balance'])
 
@@ -116,12 +94,7 @@ def test_bal_sort_by_balance(mock_getenv):
     # For now, this is a basic check.
     assert found_balances == expected_order_balances
 
-
-@patch('os.getenv')
-def test_bal_cash_zero_balance(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-
+def test_bal_cash_zero_balance():
     # Act
     result = run_bal_command(['cash', '-Z'])
 
@@ -134,12 +107,7 @@ def test_bal_cash_zero_balance(mock_getenv):
     assert "-20.00 EUR" in table_output # Assuming this is the balance for Pocket-Money
     assert "Assets:Cash:Wallet" not in table_output # Assuming Wallet has zero balance or is not present
 
-
-@patch('os.getenv')
-def test_bal_cash_zero_balance_new(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-
+def test_bal_cash_zero_balance_new():
     # Act
     result = run_bal_command(['cash', '-Z'])
 
@@ -152,12 +120,7 @@ def test_bal_cash_zero_balance_new(mock_getenv):
     assert "-20.00 EUR" in table_output
     assert "Assets:Cash:Wallet" not in table_output
 
-
-@patch('os.getenv')
-def test_bal_gratis_empty_account(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-
+def test_bal_gratis_empty_account():
     # Act
     result_no_z = run_bal_command(['Assets:Cash:Wallet'])
     
@@ -178,12 +141,7 @@ def test_bal_gratis_empty_account(mock_getenv):
     table_output_with_z = "\n".join(table_lines_with_z)
     assert "Assets:Cash:Wallet" not in table_output_with_z
 
-
-@patch('os.getenv')
-def test_bal_units(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-
+def test_bal_units():
     # Act
     result = run_bal_command(['Equity:Stocks'])
 
@@ -194,12 +152,7 @@ def test_bal_units(mock_getenv):
 
     assert "| Equity:Stocks | 12.00 ABC |" in table_output
 
-
-@patch('os.getenv')
-def test_bal_filter_by_payee_and_date(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-    
+def test_bal_filter_by_payee_and_date():
     # Act
     result = run_bal_command(['@Employer', '-b', '2025-03'])
     
@@ -214,12 +167,7 @@ def test_bal_filter_by_payee_and_date(mock_getenv):
     assert "-1,000.00 EUR" in table_output
     assert "Expenses:Food" not in table_output
 
-
-@patch('os.getenv')
-def test_bal_filter_by_amount_gt(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-    
+def test_bal_filter_by_amount_gt():
     # Act
     result = run_bal_command(['--amount', '>50'])
     

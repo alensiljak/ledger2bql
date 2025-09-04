@@ -1,10 +1,6 @@
 """
 Test the pager functionality.
 """
-import os
-import subprocess
-import sys
-import tempfile
 
 
 def test_pager_option():

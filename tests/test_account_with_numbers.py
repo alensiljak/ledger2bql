@@ -5,19 +5,19 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
+# Load environment variables from the tests directory
+from dotenv import load_dotenv
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+load_dotenv(dotenv_path, override=True)
+
 import io
 from contextlib import redirect_stdout
-from unittest.mock import patch
 
 from ledger2bql.main import main as main_entry
 
 
-@patch('os.getenv')
-def test_account_with_numbers_not_treated_as_date(mock_getenv):
+def test_account_with_numbers_not_treated_as_date():
     """Test that accounts with numbers are not automatically treated as dates."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-    
     # Save original sys.argv
     original_argv = sys.argv
     
@@ -47,12 +47,8 @@ def test_account_with_numbers_not_treated_as_date(mock_getenv):
         sys.argv = original_argv
 
 
-@patch('os.getenv')
-def test_account_containing_year_not_treated_as_date(mock_getenv):
+def test_account_containing_year_not_treated_as_date():
     """Test that accounts containing a year are not automatically treated as dates."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-    
     # Save original sys.argv
     original_argv = sys.argv
     
@@ -83,12 +79,8 @@ def test_account_containing_year_not_treated_as_date(mock_getenv):
         sys.argv = original_argv
 
 
-@patch('os.getenv')
-def test_explicit_date_still_works(mock_getenv):
+def test_explicit_date_still_works():
     """Test that explicit date ranges with -d still work correctly."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-    
     # Save original sys.argv
     original_argv = sys.argv
     

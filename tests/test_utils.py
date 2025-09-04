@@ -1,15 +1,15 @@
 '''
 Test utilities for Click-based commands.
 '''
-import io
 import os
-from contextlib import redirect_stdout
-from unittest.mock import patch
-import click
 from click.testing import CliRunner
+from dotenv import load_dotenv
 
 from ledger2bql.main import cli
 
+# Load environment variables from the tests directory
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+load_dotenv(dotenv_path, override=True)
 
 def run_bal_command(args=None):
     """Run the balance command with given arguments."""
@@ -17,7 +17,6 @@ def run_bal_command(args=None):
     if args is None:
         args = []
     return runner.invoke(cli, ['bal'] + args)
-
 
 def run_reg_command(args=None):
     """Run the register command with given arguments."""

@@ -43,7 +43,7 @@ l ...
 ```
 
 ## Tests
-Since the app is using `.env` file for environment variables, make sure that `BEANCOUNT_FILE` is set to the `sample_ledger.bean` in the `tests/` directory.
+All tests use the `.env` file in the `tests/` directory to locate the sample ledger file. Make sure this file is properly configured with the correct path to `sample_ledger.bean`.
 
 # Usage
 

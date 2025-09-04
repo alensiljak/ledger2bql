@@ -1,13 +1,7 @@
-import os
-from unittest.mock import patch
 
 from tests.test_utils import run_reg_command
 
-
-@patch('os.getenv')
-def test_reg_no_args(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+def test_reg_no_args():
     
     # Act
     result = run_reg_command()
@@ -20,11 +14,7 @@ def test_reg_no_args(mock_getenv):
     assert "Expenses:Sweets" in result.output
     assert "20.00 EUR" in result.output
 
-
-@patch('os.getenv')
-def test_reg_filter_by_account(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+def test_reg_filter_by_account():
     
     # Act
     result = run_reg_command(['food'])
@@ -43,11 +33,7 @@ def test_reg_filter_by_account(mock_getenv):
     # assert "-100.00 EUR" in output
     assert "Ice Cream" not in result.output
 
-
-@patch('os.getenv')
-def test_reg_filter_by_payee(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+def test_reg_filter_by_payee():
     
     # Act
     result = run_reg_command(['@Grocery Store'])
@@ -64,14 +50,11 @@ def test_reg_filter_by_payee(mock_getenv):
     # assert "-100.00 EUR" in output
     assert "Ice Cream" not in result.output
 
-
-@patch('os.getenv')
-def test_reg_filter_by_date(mock_getenv):
+def test_reg_filter_by_date():
     # This test is commented out because it uses a date format ("this month")
     # that is not supported by the current date parser.
     # # Arrange
-    # mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-    # 
+    #    # 
     # result = run_reg_command(['-p', 'this month'])
     # 
     # # Assert
@@ -87,15 +70,12 @@ def test_reg_filter_by_date(mock_getenv):
     # assert "Ice Cream" not in result.output
     pass
 
-
-@patch('os.getenv')
-def test_reg_sort_by_amount(mock_getenv):
+def test_reg_sort_by_amount():
     # This test is commented out because sorting by 'amount' is not supported.
     # The amount is part of the 'position' column and it's not straightforward
     # to sort by it in BQL.
     # # Arrange
-    # mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-    # 
+    #    # 
     # result = run_reg_command(['--sort', 'amount'])
     # 
     # # We expect the output to be sorted by the absolute amount of the transaction.
@@ -118,11 +98,7 @@ def test_reg_sort_by_amount(mock_getenv):
     # assert groceries_index < salary_index or groceries_index < initial_balance_index
     pass
 
-
-@patch('os.getenv')
-def test_reg_interleaved_args(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+def test_reg_interleaved_args():
     
     # Act
     result = run_reg_command(['@Ice Cream Shop', '-b', '2025-02', 'Sweets'])
@@ -136,11 +112,7 @@ def test_reg_interleaved_args(mock_getenv):
     assert "20.00 EUR" in result.output
     assert "Grocery Store" not in result.output
 
-
-@patch('os.getenv')
-def test_reg_filter_by_amount_gt(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+def test_reg_filter_by_amount_gt():
     
     # Act
     result = run_reg_command(['--amount', '>50'])
@@ -151,11 +123,7 @@ def test_reg_filter_by_amount_gt(mock_getenv):
     assert "100.00 EUR" in result.output
     assert "Ice Cream" not in result.output
 
-
-@patch('os.getenv')
-def test_reg_filter_by_amount_gt_eur(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+def test_reg_filter_by_amount_gt_eur():
     
     # Act
     result = run_reg_command(['--amount', '>50EUR'])

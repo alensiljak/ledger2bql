@@ -5,18 +5,22 @@ Consult ReadMe.md for the basic project overview.
 Use the Beancount MCP to run BQL queries against the data.
 
 # Functionality
+
 When designing new features, always consult Ledger CLI documentation to see the original features available in Ledger CLI. 
 Try to match the existing features in Ledger CLI as much as reasonably possible.
 
 If anything is unclear at any point, ask the user to provide answers and guidance.
 
 # Code
+
 Try to write clean code. Use well-knows Python standards and conventions.
 When creating new features, re-use existing code and write new code into reusable modules.
 
 Create tests first, before applying new functionality. Then run them after implementation, to confirm the functionality works as expected.
 
 Do not stage or commit code to the Git repository. The user will do this after reviewing changes.
+
+Run `ruff` to check and format the Python code.
 
 # Problems
 

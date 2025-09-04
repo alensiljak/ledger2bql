@@ -2,18 +2,11 @@
 Tests for the currency uppercasing feature.
 """
 import os
-from unittest.mock import patch
 
 from tests.test_utils import run_bal_command
 
-
-@patch('os.getenv')
-def test_currency_filter_uppercase(mock_getenv):
+def test_currency_filter_uppercase():
     """Test that currency filter automatically uppercases the currency code."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
-    )
 
     # Act
     result = run_bal_command(['-c', 'eur'])

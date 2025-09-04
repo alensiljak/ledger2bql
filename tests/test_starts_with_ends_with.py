@@ -7,16 +7,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 import io
 from contextlib import redirect_stdout
-from unittest.mock import patch
 
 from ledger2bql.main import main as main_entry
 
-
-@patch('os.getenv')
-def test_starts_with_syntax(mock_getenv):
+def test_starts_with_syntax():
     """Test the ^ (starts with) syntax for account filtering."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
     
     # Save original sys.argv
     original_argv = sys.argv
@@ -44,12 +39,8 @@ def test_starts_with_syntax(mock_getenv):
         # Restore original sys.argv
         sys.argv = original_argv
 
-
-@patch('os.getenv')
-def test_ends_with_syntax(mock_getenv):
+def test_ends_with_syntax():
     """Test the $ (ends with) syntax for account filtering."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
     
     # Save original sys.argv
     original_argv = sys.argv
@@ -77,12 +68,8 @@ def test_ends_with_syntax(mock_getenv):
         # Restore original sys.argv
         sys.argv = original_argv
 
-
-@patch('os.getenv')
-def test_exact_match_syntax(mock_getenv):
+def test_exact_match_syntax():
     """Test the ^...$ (exact match) syntax for account filtering."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
     
     # Save original sys.argv
     original_argv = sys.argv
@@ -110,12 +97,8 @@ def test_exact_match_syntax(mock_getenv):
         # Restore original sys.argv
         sys.argv = original_argv
 
-
-@patch('os.getenv')
-def test_starts_with_exclusion(mock_getenv):
+def test_starts_with_exclusion():
     """Test the ^ (starts with) syntax for account exclusion."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
     
     # Save original sys.argv
     original_argv = sys.argv
@@ -143,12 +126,8 @@ def test_starts_with_exclusion(mock_getenv):
         # Restore original sys.argv
         sys.argv = original_argv
 
-
-@patch('os.getenv')
-def test_ends_with_exclusion(mock_getenv):
+def test_ends_with_exclusion():
     """Test the $ (ends with) syntax for account exclusion."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
     
     # Save original sys.argv
     original_argv = sys.argv
@@ -175,7 +154,6 @@ def test_ends_with_exclusion(mock_getenv):
     finally:
         # Restore original sys.argv
         sys.argv = original_argv
-
 
 if __name__ == "__main__":
     test_starts_with_syntax()

@@ -2,7 +2,6 @@
 parser tests
 '''
 
-import sys
 from ledger2bql.balance import parse_query
 
 

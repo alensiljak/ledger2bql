@@ -1,16 +1,10 @@
 '''
 Tests for the "not" keyword functionality.
 '''
-import os
-from unittest.mock import patch
 
 from tests.test_utils import run_bal_command, run_reg_command
 
-
-@patch('os.getenv')
-def test_bal_not_keyword(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+def test_bal_not_keyword():
     
     # Act
     result = run_bal_command(['not', 'bank'])
@@ -28,11 +22,7 @@ def test_bal_not_keyword(mock_getenv):
     # But should not contain bank accounts
     assert "Assets:Bank:Checking" not in output
 
-
-@patch('os.getenv')
-def test_bal_not_keyword_multiple_patterns(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+def test_bal_not_keyword_multiple_patterns():
     
     # Act
     result = run_bal_command(['not', 'bank', 'cash'])
@@ -53,11 +43,7 @@ def test_bal_not_keyword_multiple_patterns(mock_getenv):
     assert "Assets:Cash:BAM" not in output
     assert "Assets:Cash:USD" not in output
 
-
-@patch('os.getenv')
-def test_bal_not_keyword_with_regular_filter(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+def test_bal_not_keyword_with_regular_filter():
     
     # Act
     result = run_bal_command(['assets', 'not', 'bank'])
@@ -74,11 +60,7 @@ def test_bal_not_keyword_with_regular_filter(mock_getenv):
     # But should not contain bank accounts
     assert "Assets:Bank:Checking" not in output
 
-
-@patch('os.getenv')
-def test_reg_not_keyword(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+def test_reg_not_keyword():
     
     # Act
     result = run_reg_command(['not', 'bank'])
@@ -96,11 +78,7 @@ def test_reg_not_keyword(mock_getenv):
     # But should not contain bank account transactions
     assert "Assets:Bank:Checking" not in output
 
-
-@patch('os.getenv')
-def test_reg_not_keyword_multiple_patterns(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+def test_reg_not_keyword_multiple_patterns():
     
     # Act
     result = run_reg_command(['not', 'bank', 'cash'])
@@ -121,11 +99,7 @@ def test_reg_not_keyword_multiple_patterns(mock_getenv):
     assert "Assets:Cash:BAM" not in output
     assert "Assets:Cash:USD" not in output
 
-
-@patch('os.getenv')
-def test_reg_not_keyword_with_regular_filter(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
+def test_reg_not_keyword_with_regular_filter():
     
     # Act
     result = run_reg_command(['assets', 'not', 'bank'])

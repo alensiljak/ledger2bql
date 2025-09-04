@@ -1,19 +1,12 @@
 """
 Tests for the currency parameter functionality.
 """
-import os
-from unittest.mock import patch
 
 from tests.test_utils import run_bal_command, run_reg_command, extract_table_data
 
 
-@patch('os.getenv')
-def test_bal_currency_filter_eur(mock_getenv):
+def test_bal_currency_filter_eur():
     """Test balance command with EUR currency filter."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
-    )
 
     # Act
     result = run_bal_command(['--currency', 'eur'])
@@ -41,13 +34,8 @@ def test_bal_currency_filter_eur(mock_getenv):
     assert "| Assets:Cash:BAM | -25.00 BAM |" not in table_output
 
 
-@patch('os.getenv')
-def test_bal_currency_filter_bam(mock_getenv):
+def test_bal_currency_filter_bam():
     """Test balance command with BAM currency filter."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
-    )
 
     # Act
     result = run_bal_command(['--currency', 'bam'])
@@ -72,13 +60,8 @@ def test_bal_currency_filter_bam(mock_getenv):
     assert "| Assets:Cash:Pocket-Money |    -20.00 EUR |" not in table_output
 
 
-@patch('os.getenv')
-def test_bal_currency_filter_abc(mock_getenv):
+def test_bal_currency_filter_abc():
     """Test balance command with ABC currency filter."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
-    )
 
     # Act
     result = run_bal_command(['--currency', 'abc'])
@@ -102,13 +85,8 @@ def test_bal_currency_filter_abc(mock_getenv):
     assert "| Assets:Cash:BAM | -25.00 BAM |" not in table_output
 
 
-@patch('os.getenv')
-def test_reg_currency_filter_abc(mock_getenv):
+def test_reg_currency_filter_abc():
     """Test register command with ABC currency filter."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
-    )
 
     # Act
     result = run_reg_command(['--currency', 'abc'])
@@ -127,13 +105,8 @@ def test_reg_currency_filter_abc(mock_getenv):
     # Should not show transactions with other currencies (unless they also have ABC)
 
 
-@patch('os.getenv')
-def test_currency_uppercase_conversion(mock_getenv):
+def test_currency_uppercase_conversion():
     """Test that currency codes are automatically uppercased."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
-    )
 
     # Test with lowercase currency that exists in the ledger
     result = run_bal_command(['-c', 'eur'])
@@ -154,13 +127,8 @@ def test_currency_uppercase_conversion(mock_getenv):
     assert "currency = 'AbC'" not in output
 
 
-@patch('os.getenv')
-def test_bal_multiple_currency_filter(mock_getenv):
+def test_bal_multiple_currency_filter():
     """Test balance command with multiple currency filter."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
-    )
 
     # Act
     result = run_bal_command(['--currency', 'eur,bam'])
@@ -193,13 +161,8 @@ def test_bal_multiple_currency_filter(mock_getenv):
     assert "| Equity:Stocks | 12.00 ABC |" not in table_output
 
 
-@patch('os.getenv')
-def test_reg_multiple_currency_filter(mock_getenv):
+def test_reg_multiple_currency_filter():
     """Test register command with multiple currency filter."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
-    )
 
     # Act
     result = run_reg_command(['--currency', 'eur,abc'])

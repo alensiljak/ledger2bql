@@ -2,7 +2,7 @@
 CLI runner for Ledger2BQL utility.
 """
 import sys
-from importlib.metadata import version, PackageNotFoundError
+from importlib.metadata import PackageNotFoundError
 from dotenv import find_dotenv, load_dotenv
 import click
 

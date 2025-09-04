@@ -2,18 +2,11 @@
 Tests for the exchange (-X) functionality.
 """
 import os
-from unittest.mock import patch
 
 from tests.test_utils import run_bal_command, run_reg_command
 
-
-@patch('os.getenv')
-def test_bal_exchange_eur_to_usd(mock_getenv):
+def test_bal_exchange_eur_to_usd():
     """Test balance command with EUR to USD exchange."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
-    )
 
     # Act
     result = run_bal_command(['--exchange', 'USD'])
@@ -28,14 +21,8 @@ def test_bal_exchange_eur_to_usd(mock_getenv):
     # Should show converted balances
     assert "Total (USD)" in output
 
-
-@patch('os.getenv')
-def test_reg_exchange_eur_to_usd(mock_getenv):
+def test_reg_exchange_eur_to_usd():
     """Test register command with EUR to USD exchange."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
-    )
 
     # Act
     result = run_reg_command(['--exchange', 'USD'])
@@ -50,14 +37,8 @@ def test_reg_exchange_eur_to_usd(mock_getenv):
     # Should show converted amounts
     assert "Amount" in output
 
-
-@patch('os.getenv')
-def test_bal_exchange_with_total(mock_getenv):
+def test_bal_exchange_with_total():
     """Test balance command with exchange and total."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
-    )
 
     # Act
     result = run_bal_command(['--exchange', 'USD', '--total'])
@@ -70,14 +51,8 @@ def test_bal_exchange_with_total(mock_getenv):
     assert "Total (USD)" in output
     assert "Total" in output
 
-
-@patch('os.getenv')
-def test_reg_exchange_with_total(mock_getenv):
+def test_reg_exchange_with_total():
     """Test register command with exchange and total."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
-    )
 
     # Act
     result = run_reg_command(['--exchange', 'USD', '--total'])

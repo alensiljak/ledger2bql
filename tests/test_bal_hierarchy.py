@@ -2,16 +2,11 @@
 Tests for the Balance command with hierarchy option.
 """
 import os
-from unittest.mock import patch
 
 from tests.test_utils import run_bal_command, extract_table_data
 
 
-@patch('os.getenv')
-def test_bal_with_hierarchy(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-    
+def test_bal_with_hierarchy():
     # Act
     result = run_bal_command(['--hierarchy'])
     
@@ -37,11 +32,7 @@ def test_bal_with_hierarchy(mock_getenv):
     assert "| Assets:Cash:USD          |" in table_output
 
 
-@patch('os.getenv')
-def test_bal_with_hierarchy_and_filter(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-    
+def test_bal_with_hierarchy_and_filter():
     # Act
     result = run_bal_command(['--hierarchy', 'Assets'])
     
@@ -69,11 +60,7 @@ def test_bal_with_hierarchy_and_filter(mock_getenv):
     assert "Income" not in table_output
 
 
-@patch('os.getenv')
-def test_bal_with_hierarchy_and_exchange(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-    
+def test_bal_with_hierarchy_and_exchange():
     # Act
     result = run_bal_command(['--hierarchy', '-X', 'USD'])
     
@@ -99,11 +86,7 @@ def test_bal_with_hierarchy_and_exchange(mock_getenv):
     assert "| Assets:Cash:USD          |" in table_output
 
 
-@patch('os.getenv')
-def test_bal_with_hierarchy_and_total(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-    
+def test_bal_with_hierarchy_and_total():
     # Act
     result = run_bal_command(['-H', '-T'])
     
@@ -132,11 +115,7 @@ def test_bal_with_hierarchy_and_total(mock_getenv):
     assert "| Total                    |" in table_output
 
 
-@patch('os.getenv')
-def test_bal_with_collapse_level_2(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-    
+def test_bal_with_collapse_level_2():
     # Act
     result = run_bal_command(['--depth', '2'])
     
@@ -162,11 +141,7 @@ def test_bal_with_collapse_level_2(mock_getenv):
     assert "Assets:Bank:Bank03581" not in table_output
 
 
-@patch('os.getenv')
-def test_bal_with_collapse_level_1(mock_getenv):
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-    
+def test_bal_with_collapse_level_1():
     # Act
     result = run_bal_command(['--depth', '1'])
     

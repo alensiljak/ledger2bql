@@ -2,18 +2,12 @@
 Tests for the Balance command with hierarchy option to confirm that 
 the balance includes children's + own for Expenses:Transport account.
 """
-import os
-from unittest.mock import patch
 
 from tests.test_utils import run_bal_command, extract_table_data
 
 
-@patch('os.getenv')
-def test_bal_hierarchy_expenses_transport_with_children(mock_getenv):
+def test_bal_hierarchy_expenses_transport_with_children():
     """Test that Expenses:Transport account correctly aggregates its children."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-    
     # Act
     result = run_bal_command(['-H', 'Expenses:Transport'])
     
@@ -37,12 +31,8 @@ def test_bal_hierarchy_expenses_transport_with_children(mock_getenv):
     # So Expenses:Transport should show the total: 25 EUR + 7 USD
 
 
-@patch('os.getenv')
-def test_bal_hierarchy_expenses_transport_verify_aggregation_values(mock_getenv):
+def test_bal_hierarchy_expenses_transport_verify_aggregation_values():
     """Test that Expenses:Transport hierarchical balance correctly aggregates child values."""
-    # Arrange
-    mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
-    
     # Act
     result = run_bal_command(['-H', 'Expenses:Transport'])
     
