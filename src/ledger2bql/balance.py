@@ -1,67 +1,37 @@
 """
 A command-line tool to translate ledger-cli 'balance' command syntax
 into a Beanquery (BQL) query.
-
-Usage:
-  python ledger_to_bql.py [options] [ACCOUNT_REGEX]
-
-Example:
-  # Translate a ledger command to show balances with a depth of 2, excluding zero-balance accounts.
-  # This command is equivalent to `ledger bal -d 2 -Z`
-  python ledger_to_bql.py -d 2 -Z
-
-  # Translate a command for a specific account with a date range.
-  # This is equivalent to `ledger bal Expenses --begin 2024-01-01 --end 2024-02-01`
-  python ledger_to_bql.py Expenses -b 2024-01-01 -e 2024-02-01
-
-  # Translate a command with multiple account filters.
-  # This is equivalent to `ledger bal income expenses`
-  python ledger_to_bql.py income expenses
-
-  # Translate a command to show a grand total row.
-  # This is equivalent to `ledger bal --total`
-  python ledger_to_bql.py --total
-
-Key Mappings:
-  - `--depth X` or `-d X` -> `GROUP BY level(account) <= X`
-  - `--zero` or `-Z`       -> `WHERE balance != 0` (removes accounts with zero balance)
-  - `--begin DATE` or `-b DATE` -> `WHERE date >= "DATE"`
-  - `--end DATE` or `-e DATE`   -> `WHERE date < "DATE"`
-  - `--total` or `-T`           -> Show a grand total row at the end
-  - `--no-pager`                -> Disable automatic paging of output
-  - `ACCOUNT_REGEX`           -> `WHERE account ~ "ACCOUNT_REGEX"`
-  - `@DESCRIPTION_REGEX   -> `WHERE description ~ "DESCRIPTION_REGEX"`
 """
 
-import argparse
+import click
 from .date_parser import parse_date, parse_date_range
-from .utils import add_common_arguments, execute_bql_command, parse_amount_filter
+from .utils import add_common_click_arguments, execute_bql_command_with_click, parse_amount_filter
 
 
-def create_parser():
-    '''Define the query parser'''
-    parser = argparse.ArgumentParser(
-        description="Translate ledger-cli balance command arguments to a Beanquery (BQL) query.",
-        epilog="""
-        Note: The `--empty` flag from ledger-cli is generally not needed for BQL
-        as `bean-query` typically includes all accounts by default.
-        """
-    )
-
-    add_common_arguments(parser)
-
-    parser.add_argument(
-        '--depth', '-D',
-        type=int,
-        help="Show accounts up to a certain depth (level) in the account tree."
-    )
-    parser.add_argument(
-        '--zero', '-Z',
-        action='store_true',
-        help="Exclude accounts with a zero balance."
-    )
-
-    return parser
+@click.command(name='bal', short_help='Show account balances')
+@click.option('--depth', '-D', type=int, help='Show accounts up to a certain depth (level) in the account tree.')
+@click.option('--zero', '-Z', is_flag=True, help='Exclude accounts with a zero balance.')
+@click.argument('account_regex', nargs=-1)
+@add_common_click_arguments
+def bal_command(account_regex, depth, zero, **kwargs):
+    """Translate ledger-cli balance command arguments to a Beanquery (BQL) query."""
+    # Package arguments in a way compatible with the existing code
+    class Args:
+        def __init__(self, account_regex, depth, zero, **kwargs):
+            self.account_regex = account_regex
+            self.depth = depth
+            self.zero = zero
+            for key, value in kwargs.items():
+                setattr(self, key, value)
+    
+    args = Args(account_regex, depth, zero, **kwargs)
+    
+    # Determine headers for the table
+    headers = ["Account", "Balance"]
+    alignments = ["left", "right"]
+    
+    # Execute the command
+    execute_bql_command_with_click(parse_query, format_output, headers, alignments, args, command_type='bal')
 
 
 def parse_query(args):
@@ -103,15 +73,15 @@ def parse_query(args):
         for regex in excluded_account_regexes:
             where_clauses.append(f"NOT (account ~ '{regex}')")
 
-    if args.begin:
+    if hasattr(args, 'begin') and args.begin:
         begin_date = parse_date(args.begin)
         where_clauses.append(f'date >= date("{begin_date}")')
-    if args.end:
+    if hasattr(args, 'end') and args.end:
         end_date = parse_date(args.end)
         where_clauses.append(f'date < date("{end_date}")')
     
     # Handle date range if provided
-    if args.date_range:
+    if hasattr(args, 'date_range') and args.date_range:
         begin_date, end_date = parse_date_range(args.date_range)
         if begin_date:
             where_clauses.append(f'date >= date("{begin_date}")')
@@ -119,7 +89,7 @@ def parse_query(args):
             where_clauses.append(f'date < date("{end_date}")')
 
     # Handle amount filters
-    if args.amount:
+    if hasattr(args, 'amount') and args.amount:
         for amount_filter in args.amount:
             op, val, cur = parse_amount_filter(amount_filter)
             amount_clause = f"number {op} {val}"
@@ -128,7 +98,7 @@ def parse_query(args):
             where_clauses.append(amount_clause)
     
     # Handle currency filter
-    if args.currency:
+    if hasattr(args, 'currency') and args.currency:
         if isinstance(args.currency, list):
             currencies_str = "', '".join(args.currency)
             where_clauses.append(f"currency IN ('{currencies_str}')")
@@ -136,7 +106,7 @@ def parse_query(args):
             where_clauses.append(f"currency = '{args.currency}'")
 
     # Build the final query
-    if args.exchange:
+    if hasattr(args, 'exchange') and args.exchange:
         # When exchange currency is specified, convert all positions to that currency
         select_clause = f"SELECT account, units(sum(position)) as Balance, convert(sum(position), '{args.exchange}') as Converted"
     else:
@@ -149,7 +119,7 @@ def parse_query(args):
     if group_by_clauses:
         query += " GROUP BY " + ", ".join(group_by_clauses)
 
-    if args.sort:
+    if hasattr(args, 'sort') and args.sort:
         sort_fields = []
         for field in args.sort.split(','):
             field = field.strip()
@@ -302,16 +272,3 @@ def format_output(output: list, args) -> list:
     return formatted_output
 
 
-def main():
-    """Runs the given query and prints the output in a pretty format."""
-    # Determine headers for the table
-    headers = ["Account", "Balance"]
-    alignments = ["left", "right"]
-    
-    # Pass args.depth to format_output_func via kwargs
-    execute_bql_command(create_parser, parse_query, format_output, 
-                        headers, alignments, command_type='bal')
-
-
-if __name__ == '__main__':
-    main()

@@ -1,52 +1,39 @@
 """
 A command-line tool to translate ledger-cli 'register' command syntax
 into a Beanquery (BQL) query.
-
-Usage:
-  python ledger_to_bql_register.py [options] [ACCOUNT_REGEX]
-
-Example:
-  # Translate a ledger command to show a register for all accounts.
-  # This command is equivalent to `ledger reg`
-  python ledger_to_bql_register.py
-
-  # Translate a command for a specific account with a running total.
-  # This is equivalent to `ledger reg Expenses --total`
-  python ledger_to_bql_register.py Expenses --total
-
-  # Translate a command with a date range and multiple account filters.
-  # This is equivalent to `ledger reg income expenses --begin 2024-01-01 --end 2024-02-01`
-  python ledger_to_bql_register.py income expenses -b 2024-01-01 -E 2024-02-01
-
-Key Mappings:
-  - `--begin DATE` or `-b DATE` -> `WHERE date >= "DATE"`
-  - `--end DATE` or `-e DATE`   -> `WHERE date < "DATE"`
-  - `--total` or `-T`           -> Calculates a running total column
-  - `--no-pager`                -> Disable automatic paging of output
-  - `ACCOUNT_REGEX`           -> `WHERE account ~ "ACCOUNT_REGEX"`
-  - `@DESCRIPTION_REGEX   -> `WHERE description ~ "DESCRIPTION_REGEX"`
 """
 
-import argparse
+import click
 from decimal import Decimal
 from collections import defaultdict
 from .date_parser import parse_date, parse_date_range
-from .utils import add_common_arguments, execute_bql_command, parse_amount_filter
+from .utils import add_common_click_arguments, execute_bql_command_with_click, parse_amount_filter
 
 
-def create_parser():
-    """Define the command-line argument parser."""
-    parser = argparse.ArgumentParser(
-        description="Translate ledger-cli register command arguments to a Beanquery (BQL) query.",
-        epilog="""
-        Note: The `--empty` flag from ledger-cli is generally not needed for BQL
-        as `bean-query` typically includes all accounts by default.
-        """
-    )
-    add_common_arguments(parser)
+@click.command(name='reg', short_help='Show transaction register')
+@click.argument('account_regex', nargs=-1)
+@add_common_click_arguments
+@click.pass_context
+def reg_command(ctx, account_regex, **kwargs):
+    """Translate ledger-cli register command arguments to a Beanquery (BQL) query."""
     # Override the default sort for 'reg' to be no sort
-    parser.set_defaults(sort=None)
-    return parser
+    kwargs['sort'] = kwargs.get('sort', None)
+    
+    # Package arguments in a way compatible with the existing code
+    class Args:
+        def __init__(self, account_regex, **kwargs):
+            self.account_regex = account_regex
+            for key, value in kwargs.items():
+                setattr(self, key, value)
+    
+    args = Args(account_regex, **kwargs)
+    
+    # Determine headers and alignments for the table
+    headers = ["Date", "Account", "Payee", "Narration", "Amount"]
+    alignments = ["left", "left", "left", "left", "right"]
+    
+    # Execute the command
+    execute_bql_command_with_click(parse_query, format_output, headers, alignments, args, command_type='reg')
 
 
 def parse_query(args):
@@ -87,15 +74,15 @@ def parse_query(args):
             where_clauses.append(f"NOT (account ~ '{regex}')")
 
     # Handle date ranges
-    if args.begin:
+    if hasattr(args, 'begin') and args.begin:
         begin_date = parse_date(args.begin)
         where_clauses.append(f'date >= date("{begin_date}")')
-    if args.end:
+    if hasattr(args, 'end') and args.end:
         end_date = parse_date(args.end)
         where_clauses.append(f'date < date("{end_date}")')
     
     # Handle date range if provided
-    if args.date_range:
+    if hasattr(args, 'date_range') and args.date_range:
         begin_date, end_date = parse_date_range(args.date_range)
         if begin_date:
             where_clauses.append(f'date >= date("{begin_date}")')
@@ -103,7 +90,7 @@ def parse_query(args):
             where_clauses.append(f'date < date("{end_date}")')
 
     # Handle amount filters
-    if args.amount:
+    if hasattr(args, 'amount') and args.amount:
         for amount_filter in args.amount:
             op, val, cur = parse_amount_filter(amount_filter)
             amount_clause = f"number {op} {val}"
@@ -112,7 +99,7 @@ def parse_query(args):
             where_clauses.append(amount_clause)
     
     # Handle currency filter
-    if args.currency:
+    if hasattr(args, 'currency') and args.currency:
         if isinstance(args.currency, list):
             currencies_str = "', '".join(args.currency)
             where_clauses.append(f"currency IN ('{currencies_str}')")
@@ -120,7 +107,7 @@ def parse_query(args):
             where_clauses.append(f"currency = '{args.currency}'")
 
     # Build the final query
-    if args.exchange:
+    if hasattr(args, 'exchange') and args.exchange:
         # When exchange currency is specified, convert positions to that currency
         select_clause = f"SELECT date, account, payee, narration, position, convert(position, '{args.exchange}') as converted_position"
     else:
@@ -131,7 +118,7 @@ def parse_query(args):
         query += " WHERE " + " AND ".join(where_clauses)
 
     # Handle sorting
-    if args.sort:
+    if hasattr(args, 'sort') and args.sort:
         sort_keys = []
         for key in args.sort.split(','):
             key = key.strip()
@@ -232,15 +219,3 @@ def format_output(output: list, args) -> list:
     return formatted_output
 
 
-def main():
-    """Runs the given query and prints the output in a pretty format."""
-    # Determine headers and alignments for the table
-    headers = ["Date", "Account", "Payee", "Narration", "Amount"]
-    alignments = ["left", "left", "left", "left", "right"]
-
-    execute_bql_command(create_parser, parse_query, format_output, 
-                        headers, alignments, command_type='reg')
-
-
-if __name__ == '__main__':
-    main()

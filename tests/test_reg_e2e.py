@@ -1,9 +1,7 @@
 import os
 from unittest.mock import patch
-import io
-from contextlib import redirect_stdout
 
-from ledger2bql.ledger_reg_to_bql import main as reg_main
+from tests.test_utils import run_reg_command
 
 
 @patch('os.getenv')
@@ -11,19 +9,16 @@ def test_reg_no_args(mock_getenv):
     # Arrange
     mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
     
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['reg']):
-            # Act
-            reg_main()
+    # Act
+    result = run_reg_command()
     
     # Assert
-    output = f.getvalue()
-    assert "2025-02-01" in output
-    assert "Ice Cream Shop" in output
-    assert "Ice Cream" in output
-    assert "Expenses:Sweets" in output
-    assert "20.00 EUR" in output
+    assert result.exit_code == 0
+    assert "2025-02-01" in result.output
+    assert "Ice Cream Shop" in result.output
+    assert "Ice Cream" in result.output
+    assert "Expenses:Sweets" in result.output
+    assert "20.00 EUR" in result.output
 
 
 @patch('os.getenv')
@@ -31,25 +26,22 @@ def test_reg_filter_by_account(mock_getenv):
     # Arrange
     mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
     
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['reg', 'food']):
-            # Act
-            reg_main()
+    # Act
+    result = run_reg_command(['food'])
     
     # Assert
-    output = f.getvalue()
-    assert "2025-03-01" in output
-    assert "Grocery Store" in output
-    assert "Groceries" in output
-    assert "Expenses:Food" in output
-    assert "100.00 EUR" in output
+    assert result.exit_code == 0
+    assert "2025-03-01" in result.output
+    assert "Grocery Store" in result.output
+    assert "Groceries" in result.output
+    assert "Expenses:Food" in result.output
+    assert "100.00 EUR" in result.output
     # The following assertions fail because BQL's SELECT only returns postings
     # that match the WHERE clause, unlike ledger-cli's register command which
     # shows the full transaction if any posting matches.
     # assert "Assets:Bank:Checking" in output
     # assert "-100.00 EUR" in output
-    assert "Ice Cream" not in output
+    assert "Ice Cream" not in result.output
 
 
 @patch('os.getenv')
@@ -57,23 +49,20 @@ def test_reg_filter_by_payee(mock_getenv):
     # Arrange
     mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
     
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['reg', '@Grocery Store']):
-            # Act
-            reg_main()
+    # Act
+    result = run_reg_command(['@Grocery Store'])
     
     # Assert
-    output = f.getvalue()
-    assert "2025-03-01" in output
-    assert "Grocery Store" in output
-    assert "Groceries" in output
-    assert "Expenses:Food" in output
-    assert "100.00 EUR" in output
+    assert result.exit_code == 0
+    assert "2025-03-01" in result.output
+    assert "Grocery Store" in result.output
+    assert "Groceries" in result.output
+    assert "Expenses:Food" in result.output
+    assert "100.00 EUR" in result.output
     # This will also fail for the same reason as test_reg_filter_by_account
     # assert "Assets:Bank:Checking" in output
     # assert "-100.00 EUR" in output
-    assert "Ice Cream" not in output
+    assert "Ice Cream" not in result.output
 
 
 @patch('os.getenv')
@@ -83,24 +72,19 @@ def test_reg_filter_by_date(mock_getenv):
     # # Arrange
     # mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
     # 
-    # f = io.StringIO()
-    # with redirect_stdout(f):
-    #     with patch('sys.argv', ['reg', '-p', 'this month']):
-    #         # Act
-    #         reg_main()
+    # result = run_reg_command(['-p', 'this month'])
     # 
     # # Assert
-    # output = f.getvalue()
     # # This test is dependent on the current date.
     # # As of writing this test, it's April 2025, so we expect to see the stock purchases.
-    # assert "2025-04-01" in output
-    # assert "Buy Stocks" in output
-    # assert "Equity:Stocks" in output
-    # assert "5.00 ABC" in output
-    # assert "2025-04-02" in output
-    # assert "Buy more stocks" in output
-    # assert "7.00 ABC" in output
-    # assert "Ice Cream" not in output
+    # assert "2025-04-01" in result.output
+    # assert "Buy Stocks" in result.output
+    # assert "Equity:Stocks" in result.output
+    # assert "5.00 ABC" in result.output
+    # assert "2025-04-02" in result.output
+    # assert "Buy more stocks" in result.output
+    # assert "7.00 ABC" in result.output
+    # assert "Ice Cream" not in result.output
     pass
 
 
@@ -112,14 +96,7 @@ def test_reg_sort_by_amount(mock_getenv):
     # # Arrange
     # mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
     # 
-    # f = io.StringIO()
-    # with redirect_stdout(f):
-    #     with patch('sys.argv', ['reg', '--sort', 'amount']):
-    #         # Act
-    #         reg_main()
-    # 
-    # # Assert
-    # output = f.getvalue()
+    # result = run_reg_command(['--sort', 'amount'])
     # 
     # # We expect the output to be sorted by the absolute amount of the transaction.
     # # The order should be:
@@ -130,10 +107,10 @@ def test_reg_sort_by_amount(mock_getenv):
     # # 5. Stocks (cost is not explicit in the same way)
     # 
     # # A simple way to check is to see the order of appearance of key strings.
-    # ice_cream_index = output.find("Ice Cream")
-    # groceries_index = output.find("Groceries")
-    # salary_index = output.find("Salary")
-    # initial_balance_index = output.find("Initial Balance")
+    # ice_cream_index = result.output.find("Ice Cream")
+    # groceries_index = result.output.find("Groceries")
+    # salary_index = result.output.find("Salary")
+    # initial_balance_index = result.output.find("Initial Balance")
     # 
     # assert -1 < ice_cream_index < groceries_index
     # # The order between Salary and Initial Balance might be ambiguous
@@ -147,20 +124,17 @@ def test_reg_interleaved_args(mock_getenv):
     # Arrange
     mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
     
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['reg', '@Ice Cream Shop', '-b', '2025-02', 'Sweets']):
-            # Act
-            reg_main()
+    # Act
+    result = run_reg_command(['@Ice Cream Shop', '-b', '2025-02', 'Sweets'])
     
     # Assert
-    output = f.getvalue()
-    assert "2025-02-01" in output
-    assert "Ice Cream Shop" in output
-    assert "Ice Cream" in output
-    assert "Expenses:Sweets" in output
-    assert "20.00 EUR" in output
-    assert "Grocery Store" not in output
+    assert result.exit_code == 0
+    assert "2025-02-01" in result.output
+    assert "Ice Cream Shop" in result.output
+    assert "Ice Cream" in result.output
+    assert "Expenses:Sweets" in result.output
+    assert "20.00 EUR" in result.output
+    assert "Grocery Store" not in result.output
 
 
 @patch('os.getenv')
@@ -168,17 +142,14 @@ def test_reg_filter_by_amount_gt(mock_getenv):
     # Arrange
     mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
     
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['reg', '--amount', '>50']):
-            # Act
-            reg_main()
+    # Act
+    result = run_reg_command(['--amount', '>50'])
     
     # Assert
-    output = f.getvalue()
-    assert "Grocery Store" in output
-    assert "100.00 EUR" in output
-    assert "Ice Cream" not in output
+    assert result.exit_code == 0
+    assert "Grocery Store" in result.output
+    assert "100.00 EUR" in result.output
+    assert "Ice Cream" not in result.output
 
 
 @patch('os.getenv')
@@ -186,14 +157,11 @@ def test_reg_filter_by_amount_gt_eur(mock_getenv):
     # Arrange
     mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
     
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['reg', '--amount', '>50EUR']):
-            # Act
-            reg_main()
+    # Act
+    result = run_reg_command(['--amount', '>50EUR'])
     
     # Assert
-    output = f.getvalue()
-    assert "Grocery Store" in output
-    assert "100.00 EUR" in output
-    assert "Ice Cream" not in output
+    assert result.exit_code == 0
+    assert "Grocery Store" in result.output
+    assert "100.00 EUR" in result.output
+    assert "Ice Cream" not in result.output

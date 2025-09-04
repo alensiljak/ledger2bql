@@ -1,13 +1,10 @@
 """
 Tests for the exchange (-X) functionality.
 """
-import io
 import os
-from contextlib import redirect_stdout
 from unittest.mock import patch
 
-from ledger2bql.ledger_bal_to_bql import main as bal_main
-from ledger2bql.ledger_reg_to_bql import main as reg_main
+from tests.test_utils import run_bal_command, run_reg_command
 
 
 @patch('os.getenv')
@@ -18,14 +15,12 @@ def test_bal_exchange_eur_to_usd(mock_getenv):
         os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
     )
 
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['bal', '--exchange', 'USD']):
-            # Act
-            bal_main()
+    # Act
+    result = run_bal_command(['--exchange', 'USD'])
 
     # Assert
-    output = f.getvalue()
+    assert result.exit_code == 0
+    output = result.output
     
     # The query should use convert function
     assert "convert(sum(position), 'USD')" in output
@@ -42,14 +37,12 @@ def test_reg_exchange_eur_to_usd(mock_getenv):
         os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
     )
 
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['reg', '--exchange', 'USD']):
-            # Act
-            reg_main()
+    # Act
+    result = run_reg_command(['--exchange', 'USD'])
 
     # Assert
-    output = f.getvalue()
+    assert result.exit_code == 0
+    output = result.output
     
     # The query should use convert function
     assert "convert(position, 'USD')" in output
@@ -66,14 +59,12 @@ def test_bal_exchange_with_total(mock_getenv):
         os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
     )
 
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['bal', '--exchange', 'USD', '--total']):
-            # Act
-            bal_main()
+    # Act
+    result = run_bal_command(['--exchange', 'USD', '--total'])
 
     # Assert
-    output = f.getvalue()
+    assert result.exit_code == 0
+    output = result.output
     
     # Should show converted balances and total
     assert "Total (USD)" in output
@@ -88,14 +79,12 @@ def test_reg_exchange_with_total(mock_getenv):
         os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
     )
 
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['reg', '--exchange', 'USD', '--total']):
-            # Act
-            reg_main()
+    # Act
+    result = run_reg_command(['--exchange', 'USD', '--total'])
 
     # Assert
-    output = f.getvalue()
+    assert result.exit_code == 0
+    output = result.output
     
     # Should show converted amounts and running totals
     assert "Running Total" in output

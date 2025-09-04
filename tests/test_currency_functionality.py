@@ -1,35 +1,10 @@
 """
 Tests for the currency parameter functionality.
 """
-import io
 import os
-from contextlib import redirect_stdout
 from unittest.mock import patch
 
-from ledger2bql.ledger_bal_to_bql import main as bal_main
-from ledger2bql.ledger_reg_to_bql import main as reg_main
-
-
-def extract_table_data(output_lines):
-    """Extract table data from output lines."""
-    table_data = []
-    start_index = -1
-    end_index = -1
-
-    for i, line in enumerate(output_lines):
-        if line.strip().startswith("+") and "---" in line:
-            if start_index == -1:
-                start_index = i
-            else:
-                end_index = i
-                break
-    
-    if start_index != -1 and end_index != -1:
-        # The actual data starts after the header and separator lines
-        for line in output_lines[start_index + 3:end_index]:
-            table_data.append(line)
-    
-    return table_data
+from tests.test_utils import run_bal_command, run_reg_command, extract_table_data
 
 
 @patch('os.getenv')
@@ -40,14 +15,12 @@ def test_bal_currency_filter_eur(mock_getenv):
         os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
     )
 
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['bal', '--currency', 'eur']):
-            # Act
-            bal_main()
+    # Act
+    result = run_bal_command(['--currency', 'eur'])
 
     # Assert
-    output = f.getvalue()
+    assert result.exit_code == 0
+    output = result.output
     
     # The query should use uppercase currency
     assert "currency = 'EUR'" in output
@@ -76,14 +49,12 @@ def test_bal_currency_filter_bam(mock_getenv):
         os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
     )
 
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['bal', '--currency', 'bam']):
-            # Act
-            bal_main()
+    # Act
+    result = run_bal_command(['--currency', 'bam'])
 
     # Assert
-    output = f.getvalue()
+    assert result.exit_code == 0
+    output = result.output
     
     # The query should use uppercase currency
     assert "currency = 'BAM'" in output
@@ -109,14 +80,12 @@ def test_bal_currency_filter_abc(mock_getenv):
         os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
     )
 
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['bal', '--currency', 'abc']):
-            # Act
-            bal_main()
+    # Act
+    result = run_bal_command(['--currency', 'abc'])
 
     # Assert
-    output = f.getvalue()
+    assert result.exit_code == 0
+    output = result.output
     
     # The query should use uppercase currency
     assert "currency = 'ABC'" in output
@@ -141,14 +110,12 @@ def test_reg_currency_filter_abc(mock_getenv):
         os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
     )
 
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['reg', '--currency', 'abc']):
-            # Act
-            reg_main()
+    # Act
+    result = run_reg_command(['--currency', 'abc'])
 
     # Assert
-    output = f.getvalue()
+    assert result.exit_code == 0
+    output = result.output
     
     # The query should use uppercase currency
     assert "currency = 'ABC'" in output
@@ -169,26 +136,20 @@ def test_currency_uppercase_conversion(mock_getenv):
     )
 
     # Test with lowercase currency that exists in the ledger
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['bal', '-c', 'eur']):
-            # Act
-            bal_main()
+    result = run_bal_command(['-c', 'eur'])
 
     # Assert - the query should use uppercase currency
-    output = f.getvalue()
+    assert result.exit_code == 0
+    output = result.output
     assert "currency = 'EUR'" in output
     assert "currency = 'eur'" not in output
 
     # Test with mixed case currency that exists in the ledger
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['bal', '-c', 'AbC']):
-            # Act
-            bal_main()
+    result = run_bal_command(['-c', 'AbC'])
 
     # Assert - the query should use uppercase currency
-    output = f.getvalue()
+    assert result.exit_code == 0
+    output = result.output
     assert "currency = 'ABC'" in output
     assert "currency = 'AbC'" not in output
 
@@ -201,14 +162,12 @@ def test_bal_multiple_currency_filter(mock_getenv):
         os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
     )
 
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['bal', '--currency', 'eur,bam']):
-            # Act
-            bal_main()
+    # Act
+    result = run_bal_command(['--currency', 'eur,bam'])
 
     # Assert
-    output = f.getvalue()
+    assert result.exit_code == 0
+    output = result.output
     
     # The query should use IN clause for multiple currencies
     assert "currency IN ('EUR', 'BAM')" in output
@@ -242,14 +201,12 @@ def test_reg_multiple_currency_filter(mock_getenv):
         os.path.join(os.path.dirname(__file__), 'sample_ledger.bean')
     )
 
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['reg', '--currency', 'eur,abc']):
-            # Act
-            reg_main()
+    # Act
+    result = run_reg_command(['--currency', 'eur,abc'])
 
     # Assert
-    output = f.getvalue()
+    assert result.exit_code == 0
+    output = result.output
     
     # The query should use IN clause for multiple currencies
     assert "currency IN ('EUR', 'ABC')" in output

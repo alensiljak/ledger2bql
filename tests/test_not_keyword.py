@@ -1,13 +1,10 @@
 '''
 Tests for the "not" keyword functionality.
 '''
-import io
 import os
-from contextlib import redirect_stdout
 from unittest.mock import patch
 
-from ledger2bql.ledger_bal_to_bql import main as bal_main
-from ledger2bql.ledger_reg_to_bql import main as reg_main
+from tests.test_utils import run_bal_command, run_reg_command
 
 
 @patch('os.getenv')
@@ -15,14 +12,12 @@ def test_bal_not_keyword(mock_getenv):
     # Arrange
     mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
     
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['bal', 'not', 'bank']):
-            # Act
-            bal_main()
+    # Act
+    result = run_bal_command(['not', 'bank'])
     
     # Assert
-    output = f.getvalue()
+    assert result.exit_code == 0
+    output = result.output
     
     # The output should contain accounts that are NOT bank accounts
     assert "Expenses:Food" in output
@@ -39,14 +34,12 @@ def test_bal_not_keyword_multiple_patterns(mock_getenv):
     # Arrange
     mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
     
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['bal', 'not', 'bank', 'cash']):
-            # Act
-            bal_main()
+    # Act
+    result = run_bal_command(['not', 'bank', 'cash'])
     
     # Assert
-    output = f.getvalue()
+    assert result.exit_code == 0
+    output = result.output
     
     # The output should contain accounts that are neither bank nor cash accounts
     assert "Expenses:Food" in output
@@ -66,14 +59,12 @@ def test_bal_not_keyword_with_regular_filter(mock_getenv):
     # Arrange
     mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
     
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['bal', 'assets', 'not', 'bank']):
-            # Act
-            bal_main()
+    # Act
+    result = run_bal_command(['assets', 'not', 'bank'])
     
     # Assert
-    output = f.getvalue()
+    assert result.exit_code == 0
+    output = result.output
     
     # The output should contain asset accounts that are NOT bank accounts
     assert "Assets:Cash:Pocket-Money" in output
@@ -89,14 +80,12 @@ def test_reg_not_keyword(mock_getenv):
     # Arrange
     mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
     
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['reg', 'not', 'bank']):
-            # Act
-            reg_main()
+    # Act
+    result = run_reg_command(['not', 'bank'])
     
     # Assert
-    output = f.getvalue()
+    assert result.exit_code == 0
+    output = result.output
     
     # The output should contain transactions that are NOT for bank accounts
     assert "Expenses:Food" in output
@@ -113,14 +102,12 @@ def test_reg_not_keyword_multiple_patterns(mock_getenv):
     # Arrange
     mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
     
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['reg', 'not', 'bank', 'cash']):
-            # Act
-            reg_main()
+    # Act
+    result = run_reg_command(['not', 'bank', 'cash'])
     
     # Assert
-    output = f.getvalue()
+    assert result.exit_code == 0
+    output = result.output
     
     # The output should contain transactions that are neither bank nor cash accounts
     assert "Expenses:Food" in output
@@ -140,14 +127,12 @@ def test_reg_not_keyword_with_regular_filter(mock_getenv):
     # Arrange
     mock_getenv.return_value = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_ledger.bean'))
     
-    f = io.StringIO()
-    with redirect_stdout(f):
-        with patch('sys.argv', ['reg', 'assets', 'not', 'bank']):
-            # Act
-            reg_main()
+    # Act
+    result = run_reg_command(['assets', 'not', 'bank'])
     
     # Assert
-    output = f.getvalue()
+    assert result.exit_code == 0
+    output = result.output
     
     # The output should contain asset transactions that are NOT bank accounts
     assert "Assets:Cash:Pocket-Money" in output

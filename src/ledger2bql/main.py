@@ -6,37 +6,64 @@ from importlib.metadata import version, PackageNotFoundError
 from dotenv import find_dotenv, load_dotenv
 import click
 
-from .ledger_bal_to_bql import main as bal_main
-from .ledger_reg_to_bql import main as reg_main
+from .balance import bal_command
+from .register import reg_command
 
 
-def main():
-    """main entry point"""
-    if len(sys.argv) < 2:
+class AliasedGroup(click.Group):
+    """A click Group that supports command aliases."""
+    
+    def get_command(self, ctx, cmd_name):
+        """Get the command by name or alias."""
+        # Try the normal way first
+        rv = click.Group.get_command(self, ctx, cmd_name)
+        if rv is not None:
+            return rv
+        
+        # Check for aliases
+        aliases = {
+            'b': 'bal',
+            'r': 'reg'
+        }
+        
+        if cmd_name in aliases:
+            return click.Group.get_command(self, ctx, aliases[cmd_name])
+        
+        return None
+
+
+@click.group(cls=AliasedGroup, invoke_without_command=True)
+@click.option('--version', is_flag=True, help='Show the version and exit.')
+@click.pass_context
+def cli(ctx, version):
+    """Translate Ledger CLI query syntax into BQL"""
+    if version:
         try:
             v = version("ledger2bql")
         except PackageNotFoundError:
             v = "local"
         click.echo(f"ledger2bql v{v}")
-        click.echo("Usage: ledger2bql [bal|b|reg|r] [options]")
-        sys.exit(1)
-
+        sys.exit(0)
+    
     # Initialize environment variables by loading .env files in the 
     # parent directories.
     dotenv_path = find_dotenv()
     load_dotenv(dotenv_path, override=True)
+    
+    # If no subcommand was called, show help
+    if ctx.invoked_subcommand is None:
+        click.echo(ctx.get_help())
+        sys.exit(0)
 
-    command = sys.argv[1]
-    sys.argv = sys.argv[1:]
 
-    if command in ("bal", "b"):
-        bal_main()
-    elif command in ("reg", "r"):
-        reg_main()
-    else:
-        click.echo(f"Unknown command: {command}")
-        click.echo("Usage: ledger2bql [bal|b|reg|r] [options]")
-        sys.exit(1)
+# Add the subcommands
+cli.add_command(bal_command)
+cli.add_command(reg_command)
+
+
+def main():
+    """main entry point"""
+    cli()
 
 
 if __name__ == "__main__":
