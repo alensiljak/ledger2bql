@@ -85,10 +85,11 @@ wheels = [
 
 [[package]]
 name = "ledger2bql"
-version = "1.5.0"
+version = "1.6.0"
 source = { editable = "." }
 dependencies = [
     { name = "beanquery" },
+    { name = "click" },
     { name = "dotenv" },
     { name = "tabulate" },
 ]
@@ -101,6 +102,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "beanquery", specifier = ">=0.2.0" },
+    { name = "click", specifier = ">=8.0.0" },
     { name = "dotenv", specifier = ">=0.9.9" },
     { name = "tabulate", specifier = ">=0.9.0" },
 ]

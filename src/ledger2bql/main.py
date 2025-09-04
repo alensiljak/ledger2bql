@@ -5,6 +5,7 @@ import sys
 import re
 from importlib.metadata import version, PackageNotFoundError
 from dotenv import find_dotenv, load_dotenv
+import click
 
 from .ledger_bal_to_bql import main as bal_main
 from .ledger_reg_to_bql import main as reg_main
@@ -83,8 +84,8 @@ def main():
             v = version("ledger2bql")
         except PackageNotFoundError:
             v = "local"
-        print(f"ledger2bql v{v}")
-        print("Usage: ledger2bql [bal|b|reg|r] [options]")
+        click.echo(f"ledger2bql v{v}")
+        click.echo("Usage: ledger2bql [bal|b|reg|r] [options]")
         sys.exit(1)
 
     # Initialize environment variables by loading .env files in the 
@@ -103,8 +104,8 @@ def main():
     elif command in ("reg", "r"):
         reg_main()
     else:
-        print(f"Unknown command: {command}")
-        print("Usage: ledger2bql [bal|b|reg|r] [options]")
+        click.echo(f"Unknown command: {command}")
+        click.echo("Usage: ledger2bql [bal|b|reg|r] [options]")
         sys.exit(1)
 
 

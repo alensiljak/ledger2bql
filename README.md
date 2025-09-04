@@ -161,6 +161,16 @@ SELECT date, account, payee, narration, position
 +------------+--------------------------+----------------+------------------+---------------+-----------------+
 ```
 
+# Automatic Paging
+
+By default, ledger2bql uses your system's pager (like `less` on Unix systems or `more` on Windows) to display output. This is especially useful when viewing large reports with many transactions.
+
+To disable automatic paging and display all output directly in the terminal, use the `--no-pager` flag:
+
+```sh
+l b --no-pager
+```
+
 # Filter Syntax
 
 The filters have initially matched the Ledger CLI syntax but some have been adjusted for convenience.

@@ -22,6 +22,7 @@ Key Mappings:
   - `--begin DATE` or `-b DATE` -> `WHERE date >= "DATE"`
   - `--end DATE` or `-e DATE`   -> `WHERE date < "DATE"`
   - `--total` or `-T`           -> Calculates a running total column
+  - `--no-pager`                -> Disable automatic paging of output
   - `ACCOUNT_REGEX`           -> `WHERE account ~ "ACCOUNT_REGEX"`
   - `@DESCRIPTION_REGEX   -> `WHERE description ~ "DESCRIPTION_REGEX"`
 """

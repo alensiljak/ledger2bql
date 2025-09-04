@@ -8,6 +8,7 @@ import sys
 from decimal import Decimal
 import beanquery
 from tabulate import tabulate
+import click
 
 
 def get_beancount_file_path():
@@ -75,6 +76,11 @@ def add_common_arguments(parser):
         '--total', '-T',
         action='store_true',
         help='Show a grand total row at the end of the balance report or a running total column in the register report.'
+    )
+    parser.add_argument(
+        '--no-pager',
+        action='store_true',
+        help='Disable automatic paging of output.'
     )
 
 
@@ -159,5 +165,14 @@ def execute_bql_command(create_parser_func, parse_query_func, format_output_func
                 headers.append(f"Total ({args.exchange})")
                 alignments.append("right")
 
-    print(tabulate(formatted_output, headers=headers, tablefmt="psql", 
-                   colalign=alignments))
+    # Generate the table output
+    table_output = tabulate(formatted_output, headers=headers, tablefmt="psql", 
+                            colalign=alignments)
+    
+    # Use pager unless explicitly disabled with --no-pager
+    use_pager = not getattr(args, 'no_pager', False)
+    
+    if use_pager:
+        click.echo_via_pager(table_output)
+    else:
+        print(table_output)
