@@ -11,20 +11,22 @@ from .utils import add_common_click_arguments, execute_bql_command_with_click, p
 @click.command(name='bal', short_help='Show account balances')
 @click.option('--depth', '-D', type=int, help='Show accounts up to a certain depth (level) in the account tree.')
 @click.option('--zero', '-Z', is_flag=True, help='Exclude accounts with a zero balance.')
+@click.option('--hierarchy', '-H', is_flag=True, help='Show hierarchical view with parent accounts aggregated.')
 @click.argument('account_regex', nargs=-1)
 @add_common_click_arguments
-def bal_command(account_regex, depth, zero, **kwargs):
+def bal_command(account_regex, depth, zero, hierarchy, **kwargs):
     """Translate ledger-cli balance command arguments to a Beanquery (BQL) query."""
     # Package arguments in a way compatible with the existing code
     class Args:
-        def __init__(self, account_regex, depth, zero, **kwargs):
+        def __init__(self, account_regex, depth, zero, hierarchy, **kwargs):
             self.account_regex = account_regex
             self.depth = depth
             self.zero = zero
+            self.hierarchy = hierarchy
             for key, value in kwargs.items():
                 setattr(self, key, value)
     
-    args = Args(account_regex, depth, zero, **kwargs)
+    args = Args(account_regex, depth, zero, hierarchy, **kwargs)
     
     # Determine headers for the table
     headers = ["Account", "Balance"]
@@ -146,6 +148,298 @@ def format_output(output: list, args) -> list:
     # Initialize grand total dictionary to accumulate balances by currency
     grand_total = {}
     converted_total = 0
+    
+    # Handle hierarchical view if requested
+    if hasattr(args, 'hierarchy') and args.hierarchy:
+        # Create hierarchical view: show parent accounts with their aggregated balances
+        from collections import defaultdict
+        from decimal import Decimal
+        
+        # Dictionary to store balances for parent accounts
+        parent_balances = defaultdict(lambda: defaultdict(Decimal))
+        parent_converted = defaultdict(Decimal) if args.exchange else None
+        
+        # First, collect all individual account balances and compute parent balances
+        individual_rows = {}
+        
+        for row in list(output): # Ensure output is a list of lists
+            if not row:
+                continue
+            
+            account_name = row[0]
+            individual_rows[account_name] = row
+            
+            # Compute balances for all parent accounts
+            parts = account_name.split(':')
+            
+            # For each level of the hierarchy, add this account's balance
+            for i in range(len(parts) - 1):  # Don't include the account itself, only parents
+                parent_account = ':'.join(parts[:i+1])
+                
+                # Handle currency conversion and balance aggregation
+                if args.exchange:
+                    # When exchange currency is specified, we have an additional column with converted values
+                    balance_inventory = row[1]  # Original balance
+                    
+                    # Sum original balances by currency
+                    if hasattr(balance_inventory, 'items'):  # It's an inventory with multiple currencies
+                        for currency, amount in balance_inventory.items():
+                            # Extract currency string
+                            if isinstance(currency, tuple):
+                                currency_str = currency[0]
+                            else:
+                                currency_str = currency
+                            
+                            # Extract number (handle Decimal)
+                            number = amount.units.number
+                            
+                            # Add to parent balance
+                            parent_balances[parent_account][currency_str] += number
+                    
+                    # For converted balances, we need to get the converted value for this specific row
+                    converted_inventory = row[2]  # Converted balance
+                    converted_amount = converted_inventory.get_currency_units(args.exchange)
+                    parent_converted[parent_account] += converted_amount.number
+                else:
+                    # The balance is always the last element in the row tuple
+                    balance_inventory = row[-1]
+                    
+                    # Sum balances by currency
+                    if hasattr(balance_inventory, 'items'):  # It's an inventory with multiple currencies
+                        for currency, amount in balance_inventory.items():
+                            # Extract currency string
+                            if isinstance(currency, tuple):
+                                currency_str = currency[0]
+                            else:
+                                currency_str = currency
+                            
+                            # Extract number (handle Decimal)
+                            number = amount.units.number
+                            
+                            # Add to parent balance
+                            parent_balances[parent_account][currency_str] += number
+        
+        # Create combined output with both individual accounts and parent aggregates
+        combined_output = []
+        
+        # Collect all unique account names (both individual and parents)
+        all_accounts = set()
+        all_accounts.update(individual_rows.keys())
+        all_accounts.update(parent_balances.keys())
+        
+        # Sort accounts to show them in a logical order
+        sorted_accounts = sorted(all_accounts)
+        
+        for account_name in sorted_accounts:
+            # If this is an individual account, use its original data
+            if account_name in individual_rows:
+                combined_output.append(individual_rows[account_name])
+            else:
+                # This is a parent account that only exists as an aggregate
+                currencies = parent_balances[account_name]
+                if args.exchange:
+                    # Create a mock inventory for the original balances
+                    class MockInventory:
+                        def __init__(self, currency_amounts):
+                            self.currency_amounts = currency_amounts
+                        
+                        def items(self):
+                            # Return list of (currency, MockPosition) tuples
+                            result = []
+                            for currency, amount in self.currency_amounts.items():
+                                result.append(((currency, None), MockPosition(amount, currency)))
+                            return result
+                        
+                        def is_empty(self):
+                            return not self.currency_amounts
+                
+                    class MockPosition:
+                        def __init__(self, amount, currency):
+                            self.units = MockUnits(amount, currency)
+                
+                    class MockUnits:
+                        def __init__(self, amount, currency):
+                            self.number = amount
+                            self.currency = currency
+                
+                    # Create a mock converted inventory
+                    class MockConvertedInventory:
+                        def __init__(self, amount):
+                            self.amount = amount
+                        
+                        def get_currency_units(self, currency):
+                            class MockConvertedAmount:
+                                def __init__(self, number, currency):
+                                    self.number = number
+                                    self.currency = currency
+                            return MockConvertedAmount(self.amount, currency)
+                
+                    row = (account_name, MockInventory(currencies), MockConvertedInventory(parent_converted[account_name]))
+                else:
+                    # Create a mock inventory for the balances
+                    class MockInventory:
+                        def __init__(self, currency_amounts):
+                            self.currency_amounts = currency_amounts
+                        
+                        def items(self):
+                            # Return list of (currency, MockPosition) tuples
+                            result = []
+                            for currency, amount in self.currency_amounts.items():
+                                result.append(((currency, None), MockPosition(amount, currency)))
+                            return result
+                        
+                        def is_empty(self):
+                            return not self.currency_amounts
+                
+                    class MockPosition:
+                        def __init__(self, amount, currency):
+                            self.units = MockUnits(amount, currency)
+                
+                    class MockUnits:
+                        def __init__(self, amount, currency):
+                            self.number = amount
+                            self.currency = currency
+                
+                    row = (account_name, MockInventory(currencies))
+                combined_output.append(row)
+        
+        output = combined_output
+    
+    # Handle depth collapsing (this should work for both regular and summarized output)
+    if hasattr(args, 'depth') and args.depth:
+        # Group accounts by their parent at the specified depth level and sum balances
+        from collections import defaultdict
+        from decimal import Decimal
+        
+        # Dictionary to store collapsed balances: {parent_account: {currency: amount}}
+        collapsed_balances = defaultdict(lambda: defaultdict(Decimal))
+        collapsed_converted = defaultdict(Decimal) if args.exchange else None
+        
+        for row in list(output): # Ensure output is a list of lists
+            if not row:
+                continue
+            
+            account_name = row[0]
+            
+            # Determine the parent account name for collapsing based on depth level
+            parts = account_name.split(':')
+            if len(parts) > args.depth:
+                # Collapse to the specified level
+                collapsed_account = ':'.join(parts[:args.depth])
+            else:
+                collapsed_account = account_name  # Keep as is if already at or below collapse level
+            
+            # Handle currency conversion and balance summarization
+            if args.exchange:
+                # When exchange currency is specified, we have an additional column with converted values
+                balance_inventory = row[1]  # Original balance
+                converted_inventory = row[2]  # Converted balance
+                
+                # Sum original balances by currency
+                if hasattr(balance_inventory, 'items'):  # It's an inventory with multiple currencies
+                    for currency, amount in balance_inventory.items():
+                        # Extract currency string
+                        if isinstance(currency, tuple):
+                            currency_str = currency[0]
+                        else:
+                            currency_str = currency
+                        
+                        # Extract number (handle Decimal)
+                        number = amount.units.number
+                        
+                        # Add to collapsed balance
+                        collapsed_balances[collapsed_account][currency_str] += number
+                
+                # Sum converted balances
+                converted_amount = converted_inventory.get_currency_units(args.exchange)
+                collapsed_converted[collapsed_account] += converted_amount.number
+            else:
+                # The balance is always the last element in the row tuple
+                balance_inventory = row[-1]
+                
+                # Sum balances by currency
+                if hasattr(balance_inventory, 'items'):  # It's an inventory with multiple currencies
+                    for currency, amount in balance_inventory.items():
+                        # Extract currency string
+                        if isinstance(currency, tuple):
+                            currency_str = currency[0]
+                        else:
+                            currency_str = currency
+                        
+                        # Extract number (handle Decimal)
+                        number = amount.units.number
+                        
+                        # Add to collapsed balance
+                        collapsed_balances[collapsed_account][currency_str] += number
+        
+        # Convert the collapsed data back to the format expected by the rest of the function
+        output = []
+        for collapsed_account, currencies in collapsed_balances.items():
+            if args.exchange:
+                # Create a mock inventory for the original balances
+                class MockInventory:
+                    def __init__(self, currency_amounts):
+                        self.currency_amounts = currency_amounts
+                    
+                    def items(self):
+                        # Return list of (currency, MockPosition) tuples
+                        result = []
+                        for currency, amount in self.currency_amounts.items():
+                            result.append(((currency, None), MockPosition(amount, currency)))
+                        return result
+                    
+                    def is_empty(self):
+                        return not self.currency_amounts
+                
+                class MockPosition:
+                    def __init__(self, amount, currency):
+                        self.units = MockUnits(amount, currency)
+                
+                class MockUnits:
+                    def __init__(self, amount, currency):
+                        self.number = amount
+                        self.currency = currency
+                
+                # Create a mock converted inventory
+                class MockConvertedInventory:
+                    def __init__(self, amount):
+                        self.amount = amount
+                    
+                    def get_currency_units(self, currency):
+                        class MockConvertedAmount:
+                            def __init__(self, number, currency):
+                                self.number = number
+                                self.currency = currency
+                        return MockConvertedAmount(self.amount, currency)
+                
+                row = (collapsed_account, MockInventory(currencies), MockConvertedInventory(collapsed_converted[collapsed_account]))
+            else:
+                # Create a mock inventory for the balances
+                class MockInventory:
+                    def __init__(self, currency_amounts):
+                        self.currency_amounts = currency_amounts
+                    
+                    def items(self):
+                        # Return list of (currency, MockPosition) tuples
+                        result = []
+                        for currency, amount in self.currency_amounts.items():
+                            result.append(((currency, None), MockPosition(amount, currency)))
+                        return result
+                    
+                    def is_empty(self):
+                        return not self.currency_amounts
+                
+                class MockPosition:
+                    def __init__(self, amount, currency):
+                        self.units = MockUnits(amount, currency)
+                
+                class MockUnits:
+                    def __init__(self, amount, currency):
+                        self.number = amount
+                        self.currency = currency
+                
+                row = (collapsed_account, MockInventory(currencies))
+            output.append(row)
     
     for row in list(output): # Ensure output is a list of lists
         if not row:

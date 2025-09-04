@@ -65,7 +65,7 @@ ledger2bql b card
 ledger2bql r card -b 2025-08
 ```
 
-To get the list of available parameters, simply run
+For a list of available parameters, simply run
 ```sh
 ledger2bql
 ledger2bql bal --help
@@ -116,6 +116,62 @@ SELECT account, sum(position) GROUP BY account ORDER BY account ASC
 |--------------------------+---------------|
 | Total                    |    -15.35 EUR |
 +--------------------------+---------------+
+```
+
+To show a hierarchical view with parent accounts showing aggregated balances, use the `--hierarchy` or `-H` flag:
+```sh
+# l b --hierarchy
+
+Your BQL query is:
+SELECT account, sum(position) GROUP BY account ORDER BY account ASC
+
++--------------------------+------------------------------------------------+
+| Account                  |                                        Balance |
+|--------------------------+------------------------------------------------|
+| Assets                   | 3,000.00 CHF 1,839.65 EUR -25.00 BAM -7.00 USD |
+| Assets:Bank              |                      3,000.00 CHF 1,859.65 EUR |
+| Assets:Bank:Bank03581    |                                   3,000.00 CHF |
+| Assets:Bank:Checking     |                                   1,359.65 EUR |
+| Assets:Bank:Savings      |                                     500.00 EUR |
+| Assets:Cash              |                -25.00 BAM -20.00 EUR -7.00 USD |
+| Assets:Cash:BAM          |                                     -25.00 BAM |
+| Assets:Cash:Pocket-Money |                                     -20.00 EUR |
+| Assets:Cash:USD          |                                      -7.00 USD |
+| Equity                   |                        -1,000.00 EUR 12.00 ABC |
+| Equity:Opening-Balances  |                                  -1,000.00 EUR |
+| Equity:Stocks            |                                      12.00 ABC |
+| Expenses                 |                  145.00 EUR 25.00 BAM 7.00 USD |
+| Expenses:Food            |                           100.00 EUR 25.00 BAM |
+| Expenses:Sweets          |                                      20.00 EUR |
+| Expenses:Transport       |                                       7.00 USD |
+| Expenses:Transport:Bus   |                                      10.00 EUR |
+| Expenses:Transport:Train |                                      15.00 EUR |
+| Income                   |                    -3,000.00 CHF -1,000.00 EUR |
+| Income:Other             |                                  -3,000.00 CHF |
+| Income:Salary            |                                  -1,000.00 EUR |
++--------------------------+------------------------------------------------+
+```
+
+To collapse accounts to a specific depth level, use the `--depth` option:
+```sh
+# l b --depth 2
+
+Your BQL query is:
+SELECT account, sum(position) GROUP BY account ORDER BY account ASC
+
++-------------------------+---------------------------------+
+| Account                 |                         Balance |
+|-------------------------+---------------------------------|
+| Assets:Bank             |       3,000.00 CHF 1,859.65 EUR |
+| Assets:Cash             | -25.00 BAM -20.00 EUR -7.00 USD |
+| Equity:Opening-Balances |                   -1,000.00 EUR |
+| Equity:Stocks           |                       12.00 ABC |
+| Expenses:Food           |            100.00 EUR 25.00 BAM |
+| Expenses:Sweets         |                       20.00 EUR |
+| Expenses:Transport      |              7.00 USD 25.00 EUR |
+| Income:Other            |                   -3,000.00 CHF |
+| Income:Salary           |                   -1,000.00 EUR |
++-------------------------+---------------------------------+
 ```
 
 ## Register
