@@ -93,7 +93,7 @@ def add_common_click_arguments(func):
     func = click.option('--limit', type=int, help='Limit the number of results.')(func)
     func = click.option('--amount', '-a', multiple=True, help='Filter by amount. Format: [>|>=|<|<=|=]AMOUNT[CURRENCY]. E.g. >100EUR')(func)
     func = click.option('--currency', '-c', help='Filter by currency. E.g. EUR or EUR,BAM')(func)
-    func = click.option('--exchange', '-X', help='Convert all amounts to the specified currency.')(func)
+    func = click.option('--exchange', '-X', type=str.upper, help='Convert all amounts to the specified currency.')(func)
     func = click.option('--total', '-T', is_flag=True, help='Show a grand total row at the end of the balance report or a running total column in the register report.')(func)
     func = click.option('--no-pager', is_flag=True, help='Disable automatic paging of output.')(func)
     return func
