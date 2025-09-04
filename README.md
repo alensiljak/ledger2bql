@@ -59,6 +59,10 @@ You can create an .env file, to customize different ledgers for different folder
 
 For convenience, you can use a `l.cmd` as a shortcut for ledger2bql. See the actual file in the project root.
 
+The commands support short aliases:
+- `bal` can be shortened to `b`
+- `reg` can be shortened to `r`
+
 Run
 ```sh
 ledger2bql b card

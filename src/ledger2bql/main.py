@@ -39,7 +39,8 @@ def cli(ctx, version):
     """Translate Ledger CLI query syntax into BQL"""
     if version:
         try:
-            v = version("ledger2bql")
+            from importlib.metadata import version as get_version
+            v = get_version("ledger2bql")
         except PackageNotFoundError:
             v = "local"
         click.echo(f"ledger2bql v{v}")
@@ -52,7 +53,15 @@ def cli(ctx, version):
     
     # If no subcommand was called, show help
     if ctx.invoked_subcommand is None:
+        try:
+            from importlib.metadata import version as get_version
+            v = get_version("ledger2bql")
+        except PackageNotFoundError:
+            v = "local"
+        click.echo(f"ledger2bql v{v}")
         click.echo(ctx.get_help())
+        click.echo("\nNote: 'b' is an alias for 'bal', and 'r' is an alias for 'reg'")
+        click.echo("You can call any command with '--help' to get the list of available parameters and options.")
         sys.exit(0)
 
 
