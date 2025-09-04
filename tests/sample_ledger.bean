@@ -1,5 +1,9 @@
 ; Sample ledger for tests
 
+; Use some plugins for convenience:
+; Imply prices from any conversions.
+plugin "beancount.plugins.implicit_prices"
+
 ; accounts
 1900-01-01 open Assets:Bank:Checking EUR
 1900-01-01 open Assets:Bank:Bank03581 CHF
