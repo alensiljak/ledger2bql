@@ -19,6 +19,42 @@ def get_beancount_file_path():
     return beancount_file
 
 
+def parse_account_pattern(pattern):
+    """
+    Parse account pattern and convert to appropriate regex pattern for BQL.
+    
+    Supports:
+    - ^pattern (starts with)
+    - pattern$ (ends with)
+    - ^pattern$ (exact match)
+    - pattern (regex match, default)
+    
+    Returns a formatted regex pattern string.
+    """
+    import re
+    if pattern.startswith('^') and pattern.endswith('$'):
+        # Exact match: ^pattern$
+        exact_match = pattern[1:-1]  # Remove both ^ and $
+        # Create a regex that matches the exact string
+        regex_pattern = f'^{re.escape(exact_match)}$'
+        return regex_pattern
+    elif pattern.startswith('^'):
+        # Starts with: ^pattern
+        starts_with = pattern[1:]  # Remove ^
+        # Create a regex that matches strings starting with this pattern
+        regex_pattern = f'^{re.escape(starts_with)}'
+        return regex_pattern
+    elif pattern.endswith('$'):
+        # Ends with: pattern$
+        ends_with = pattern[:-1]  # Remove $
+        # Create a regex that matches strings ending with this pattern
+        regex_pattern = f'{re.escape(ends_with)}$'
+        return regex_pattern
+    else:
+        # Regex match (default behavior)
+        return pattern
+
+
 def add_common_arguments(parser):
     """Add common arguments to an argparse parser."""
     parser.add_argument(

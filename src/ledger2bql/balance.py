@@ -5,7 +5,7 @@ into a Beanquery (BQL) query.
 
 import click
 from .date_parser import parse_date, parse_date_range
-from .utils import add_common_click_arguments, execute_bql_command_with_click, parse_amount_filter
+from .utils import add_common_click_arguments, execute_bql_command_with_click, parse_amount_filter, parse_account_pattern
 
 
 @click.command(name='bal', short_help='Show account balances')
@@ -66,12 +66,14 @@ def parse_query(args):
             i += 1
 
     if account_regexes:
-        for regex in account_regexes:
-            where_clauses.append(f"account ~ '{regex}'")
+        for pattern in account_regexes:
+            regex_pattern = parse_account_pattern(pattern)
+            where_clauses.append(f"account ~ '{regex_pattern}'")
     
     if excluded_account_regexes:
-        for regex in excluded_account_regexes:
-            where_clauses.append(f"NOT (account ~ '{regex}')")
+        for pattern in excluded_account_regexes:
+            regex_pattern = parse_account_pattern(pattern)
+            where_clauses.append(f"NOT (account ~ '{regex_pattern}')")
 
     if hasattr(args, 'begin') and args.begin:
         begin_date = parse_date(args.begin)

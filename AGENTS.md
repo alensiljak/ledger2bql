@@ -18,6 +18,10 @@ Create tests first, before applying new functionality. Then run them after imple
 
 Do not stage or commit code to the Git repository. The user will do this after reviewing changes.
 
+# Problems
+
+If you run into any complex or far-reaching problems, consult with the developer before trying to solve them. This may save time and direct you in finding the correct solution. It also helps to improve the instructions.
+
 # Running Python
 To run Python scripts, use `uv`:
 ```sh
