@@ -14,7 +14,7 @@ def test_bal_no_args():
     table_output = "\n".join(table_lines)
 
     assert "Assets:Cash:Pocket-Money" in table_output
-    assert "-20.00 EUR" in table_output
+    assert "-45.00 EUR" in table_output  # Updated to reflect new transaction
     assert "Expenses:Sweets" in table_output
     assert "20.00 EUR" in table_output
 
@@ -46,10 +46,11 @@ def test_bal_default_sort_by_account():
     expected_table_output_lines = [
         "| Assets:Bank:Checking     |         1,359.65 EUR |",
         "| Assets:Cash:BAM          |           -25.00 BAM |",
-        "| Assets:Cash:Pocket-Money |           -20.00 EUR |",
+        "| Assets:Cash:Pocket-Money |           -45.00 EUR |",  # Updated to reflect new transaction
         "| Assets:Cash:USD          |            -7.00 USD |",
         "| Equity:Opening-Balances  |        -1,000.00 EUR |",
         "| Equity:Stocks            |            12.00 ABC |",
+        "| Expenses:Accommodation   |            25.00 EUR |",  # Added new transaction
         "| Expenses:Food            | 100.00 EUR 25.00 BAM |",
         "| Expenses:Sweets          |            20.00 EUR |",
         "| Expenses:Transport       |             7.00 USD |",
@@ -70,14 +71,25 @@ def test_bal_sort_by_balance():
     table_output = "\n".join(table_lines)
 
     # Expected order based on balances in sample_ledger.bean
-    # Assuming ascending order for now, adjust if BQL sorts descending by default
+    # Sorted by actual balance amount (including currency), ascending order
+    # USD amounts come first (negative), then EUR (negative), then EUR (positive), then CHF (negative), then CHF (positive), then BAM, then ABC
     expected_order_balances = [
+        "-7.00 USD",     # Assets:Cash:USD
+        "7.00 USD",      # Expenses:Transport
+        "-25.00 BAM",    # Assets:Cash:BAM
+        "12.00 ABC",     # Equity:Stocks
         "-1,000.00 EUR", # Equity:Opening-Balances
         "-1,000.00 EUR", # Income:Salary
-        "-20.00 EUR", # Assets:Cash:Pocket-Money
-        "20.00 EUR", # Expenses:Sweets
-        "100.00 EUR", # Expenses:Food
-        "1,359.65 EUR"  # Assets:Bank:Checking
+        "-45.00 EUR",    # Assets:Cash:Pocket-Money
+        "10.00 EUR",     # Expenses:Transport:Bus
+        "15.00 EUR",     # Expenses:Transport:Train
+        "20.00 EUR",     # Expenses:Sweets
+        "25.00 EUR",     # Expenses:Accommodation
+        "100.00 EUR",    # Expenses:Food (partially)
+        "500.00 EUR",    # Assets:Bank:Savings
+        "1,359.65 EUR",  # Assets:Bank:Checking
+        "-3,000.00 CHF", # Income:Other
+        "3,000.00 CHF"   # Assets:Bank:Bank03581
     ]
 
     # Extract balances from the output and check their order
@@ -104,7 +116,7 @@ def test_bal_cash_zero_balance():
     table_output = "\n".join(table_lines)
 
     assert "Assets:Cash:Pocket-Money" in table_output
-    assert "-20.00 EUR" in table_output # Assuming this is the balance for Pocket-Money
+    assert "-45.00 EUR" in table_output # Updated to reflect new transaction
     assert "Assets:Cash:Wallet" not in table_output # Assuming Wallet has zero balance or is not present
 
 def test_bal_cash_zero_balance_new():
@@ -117,7 +129,7 @@ def test_bal_cash_zero_balance_new():
     table_output = "\n".join(table_lines)
 
     assert "Assets:Cash:Pocket-Money" in table_output
-    assert "-20.00 EUR" in table_output
+    assert "-45.00 EUR" in table_output  # Updated to reflect new transaction
     assert "Assets:Cash:Wallet" not in table_output
 
 def test_bal_gratis_empty_account():

@@ -222,9 +222,22 @@ def execute_bql_command(create_parser_func, parse_query_func, format_output_func
     use_pager = not getattr(args, 'no_pager', False)
     
     if use_pager:
-        click.echo_via_pager(table_output)
+        # Handle Unicode encoding issues when using pager
+        try:
+            click.echo_via_pager(table_output)
+        except UnicodeEncodeError:
+            # Fallback to direct output with error handling
+            try:
+                print(table_output)
+            except UnicodeEncodeError:
+                # Last resort: encode to ASCII with replacement characters
+                print(table_output.encode('ascii', 'replace').decode('ascii'))
     else:
-        print(table_output)
+        try:
+            print(table_output)
+        except UnicodeEncodeError:
+            # Fallback to ASCII with replacement characters
+            print(table_output.encode('ascii', 'replace').decode('ascii'))
 
 
 def execute_bql_command_with_click(parse_query_func, format_output_func,
@@ -287,6 +300,19 @@ def execute_bql_command_with_click(parse_query_func, format_output_func,
     use_pager = not getattr(args, 'no_pager', False)
     
     if use_pager:
-        click.echo_via_pager(table_output)
+        # Handle Unicode encoding issues when using pager
+        try:
+            click.echo_via_pager(table_output)
+        except UnicodeEncodeError:
+            # Fallback to direct output with error handling
+            try:
+                click.echo(table_output)
+            except UnicodeEncodeError:
+                # Last resort: encode to ASCII with replacement characters
+                click.echo(table_output.encode('ascii', 'replace').decode('ascii'))
     else:
-        click.echo(table_output)
+        try:
+            click.echo(table_output)
+        except UnicodeEncodeError:
+            # Fallback to ASCII with replacement characters
+            click.echo(table_output.encode('ascii', 'replace').decode('ascii'))

@@ -24,8 +24,9 @@ def test_bal_currency_filter_eur():
     
     # Should show accounts with EUR currency
     assert "| Assets:Bank:Checking     |  1,359.65 EUR |" in table_output
-    assert "| Assets:Cash:Pocket-Money |    -20.00 EUR |" in table_output
+    assert "| Assets:Cash:Pocket-Money |    -45.00 EUR |" in table_output  # Updated to reflect new transaction
     assert "| Equity:Opening-Balances  | -1,000.00 EUR |" in table_output
+    assert "| Expenses:Accommodation   |     25.00 EUR |" in table_output  # Added new transaction
     assert "| Expenses:Food            |    100.00 EUR |" in table_output
     assert "| Expenses:Sweets          |     20.00 EUR |" in table_output
     assert "| Income:Salary            | -1,000.00 EUR |" in table_output
@@ -146,8 +147,9 @@ def test_bal_multiple_currency_filter():
     
     # Should show accounts with EUR currency
     assert "| Assets:Bank:Checking     |         1,359.65 EUR |" in table_output
-    assert "| Assets:Cash:Pocket-Money |           -20.00 EUR |" in table_output
+    assert "| Assets:Cash:Pocket-Money |           -45.00 EUR |" in table_output  # Updated to reflect new transaction
     assert "| Equity:Opening-Balances  |        -1,000.00 EUR |" in table_output
+    assert "| Expenses:Accommodation   |            25.00 EUR |" in table_output  # Added new transaction
     assert "| Expenses:Sweets          |            20.00 EUR |" in table_output
     assert "| Income:Salary            |        -1,000.00 EUR |" in table_output
     

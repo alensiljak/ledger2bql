@@ -50,6 +50,12 @@ All tests use the `.env` file in the `tests/` directory to locate the sample led
 
 # Usage
 
+If you are using Unicode characters in your Beancount journal, you may want to set
+```sh
+PYTHONIOENCODING=utf-8
+```
+for the best experience.
+
 Install the package:
 ```sh
 uv pip install ledger2bql

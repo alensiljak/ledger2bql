@@ -16,6 +16,7 @@ plugin "beancount.plugins.implicit_prices"
 1900-01-01 open Income:Salary
 1900-01-01 open Income:Other
 ; expenses
+1900-01-01 open Expenses:Accommodation
 1900-01-01 open Expenses:Food
 1900-01-01 open Expenses:Sweets
 1900-01-01 open Expenses:Transport
@@ -55,7 +56,7 @@ plugin "beancount.plugins.implicit_prices"
   Equity:Stocks 7 ABC { 1.30 EUR }
   Assets:Bank:Checking 
 
-2025-05-01 txn "Supermarket" "drinks"
+2025-05-01 txn "Supermarket" "piće"
   Expenses:Food 25 BAM
   Assets:Cash:BAM
 
@@ -78,3 +79,7 @@ plugin "beancount.plugins.implicit_prices"
 2025-08-16 txn "Holiday" "Train"
   Expenses:Transport:Train  15 EUR
   Assets:Bank:Checking
+
+2025-09-01 * "Großer Priel Klettersteig" ""
+  Expenses:Accommodation 25 EUR
+  Assets:Cash:Pocket-Money

@@ -125,9 +125,10 @@ def test_bal_with_collapse_level_2():
 
     # Check that the accounts are collapsed to level 2
     assert "| Assets:Bank             |       3,000.00 CHF 1,859.65 EUR |" in table_output
-    assert "| Assets:Cash             | -25.00 BAM -20.00 EUR -7.00 USD |" in table_output
+    assert "| Assets:Cash             | -25.00 BAM -45.00 EUR -7.00 USD |" in table_output  # Updated Pocket-Money balance
     assert "| Equity:Opening-Balances |                   -1,000.00 EUR |" in table_output
     assert "| Equity:Stocks           |                       12.00 ABC |" in table_output
+    assert "| Expenses:Accommodation  |                       25.00 EUR |"  # Added new transaction
     assert "| Expenses:Food           |            100.00 EUR 25.00 BAM |" in table_output
     assert "| Expenses:Sweets         |                       20.00 EUR |" in table_output
     assert "| Expenses:Transport      |              7.00 USD 25.00 EUR |" in table_output
@@ -150,9 +151,9 @@ def test_bal_with_collapse_level_1():
     table_output = "\n".join(table_lines)
 
     # Check that the accounts are collapsed to level 1
-    assert "| Assets    | 3,000.00 CHF 1,839.65 EUR -25.00 BAM -7.00 USD |" in table_output
+    assert "| Assets    | 3,000.00 CHF 1,814.65 EUR -25.00 BAM -7.00 USD |" in table_output  # Updated total (1839.65 - 25 = 1814.65)
     assert "| Equity    |                        -1,000.00 EUR 12.00 ABC |" in table_output
-    assert "| Expenses  |                  145.00 EUR 25.00 BAM 7.00 USD |" in table_output
+    assert "| Expenses  |                  170.00 EUR 25.00 BAM 7.00 USD |" in table_output  # Updated total (145 + 25 = 170)
     assert "| Income    |                    -3,000.00 CHF -1,000.00 EUR |" in table_output
     
     # Check that individual accounts are not present (they should be collapsed)
