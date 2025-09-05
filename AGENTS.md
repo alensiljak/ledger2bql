@@ -22,6 +22,8 @@ Do not stage or commit code to the Git repository. The user will do this after r
 
 Run `ruff` to check and format the Python code.
 
+After making modifications, clean up any created, but no longer needed, code and files.
+
 # Problems
 
 If you run into any complex or far-reaching problems, consult with the developer before trying to solve them. This may save time and direct you in finding the correct solution. It also helps to improve the instructions.
@@ -29,6 +31,7 @@ If you run into any complex or far-reaching problems, consult with the developer
 There are often problems with adding text to files. In this case, if the retry does not succeed, write the content into a separate, temporary file and notify the user, who will move that generated content into the correct file.
 
 # Running Python
+
 To run Python scripts, use `uv`:
 ```sh
 uv run python <script>
@@ -37,6 +40,7 @@ uv run python <script>
 Note that changing environment variables happens through modification of the .env file.
 
 # Tests
+
 To run tests, also run with `uv`:
 ```sh
 uv run pytest

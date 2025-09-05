@@ -16,8 +16,6 @@ from .utils import add_common_click_arguments, execute_bql_command_with_click, p
 @click.pass_context
 def reg_command(ctx, account_regex, **kwargs):
     """Translate ledger-cli register command arguments to a Beanquery (BQL) query."""
-    # Override the default sort for 'reg' to be no sort
-    kwargs['sort'] = kwargs.get('sort', None)
     
     # Package arguments in a way compatible with the existing code
     class Args:

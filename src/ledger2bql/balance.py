@@ -14,19 +14,24 @@ from .utils import add_common_click_arguments, execute_bql_command_with_click, p
 @click.option('--hierarchy', '-H', is_flag=True, help='Show hierarchical view with parent accounts aggregated.')
 @click.argument('account_regex', nargs=-1)
 @add_common_click_arguments
-def bal_command(account_regex, depth, zero, hierarchy, **kwargs):
+def bal_command(account_regex, depth, zero, hierarchy, sort=None, **kwargs):
     """Translate ledger-cli balance command arguments to a Beanquery (BQL) query."""
+    # Apply default sorting for balance command if no sort is specified
+    if sort is None:
+        sort = 'account'
+    
     # Package arguments in a way compatible with the existing code
     class Args:
-        def __init__(self, account_regex, depth, zero, hierarchy, **kwargs):
+        def __init__(self, account_regex, depth, zero, hierarchy, sort=None, **kwargs):
             self.account_regex = account_regex
             self.depth = depth
             self.zero = zero
             self.hierarchy = hierarchy
+            self.sort = sort
             for key, value in kwargs.items():
                 setattr(self, key, value)
     
-    args = Args(account_regex, depth, zero, hierarchy, **kwargs)
+    args = Args(account_regex, depth, zero, hierarchy, sort=sort, **kwargs)
     
     # Determine headers for the table
     headers = ["Account", "Balance"]

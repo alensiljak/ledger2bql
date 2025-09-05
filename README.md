@@ -18,12 +18,6 @@ For more background on Ledger's query syntax, see the [docs](https://ledger-cli.
 
 # Usage
 
-If you are using Unicode characters in your Beancount journal, you may want to set
-```sh
-PYTHONIOENCODING=utf-8
-```
-for the best experience.
-
 Install the package:
 ```sh
 uv pip install ledger2bql
@@ -52,6 +46,10 @@ ledger2bql
 ledger2bql bal --help
 ledger2bql reg --help
 ```
+
+## Unicode UTF-8 Support
+
+If you are using Unicode characters in your Beancount journal, and are running Windows, you may try setting your system locale to Unicode UTF-8, for better experience.
 
 # Development
 

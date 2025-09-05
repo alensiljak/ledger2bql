@@ -123,7 +123,7 @@ def add_common_click_arguments(func):
     func = click.option('--end', '-e', help='End date for the query (YYYY-MM-DD).')(func)
     func = click.option('--date-range', '-d', help='Date range in format YYYY..YYYY, YYYY-MM..YYYY-MM, or YYYY-MM-DD..YYYY-MM-DD. Shorthand syntax: YYYY, YYYY-MM, YYYY-MM-DD, YYYY.., ..YYYY, etc.')(func)
     func = click.option('--empty', is_flag=True, help='Show accounts with zero balance (for consistency with ledger-cli, no effect on BQL).')(func)
-    func = click.option('--sort', '-S', default='account', help='Sort the results by the given comma-separated fields. Prefix with - for descending order.')(func)
+    func = click.option('--sort', '-S', help='Sort the results by the given comma-separated fields. Prefix with - for descending order.')(func)
     func = click.option('--limit', type=int, help='Limit the number of results.')(func)
     func = click.option('--amount', '-a', multiple=True, help='Filter by amount. Format: [>|>=|<|<=|=]AMOUNT[CURRENCY]. E.g. >100EUR')(func)
     func = click.option('--currency', '-c', help='Filter by currency. E.g. EUR or EUR,BAM')(func)
@@ -221,23 +221,11 @@ def execute_bql_command(create_parser_func, parse_query_func, format_output_func
     # Use pager unless explicitly disabled with --no-pager
     use_pager = not getattr(args, 'no_pager', False)
     
+    # With UTF-8 encoding configured globally, we can simplify output handling
     if use_pager:
-        # Handle Unicode encoding issues when using pager
-        try:
-            click.echo_via_pager(table_output)
-        except UnicodeEncodeError:
-            # Fallback to direct output with error handling
-            try:
-                print(table_output)
-            except UnicodeEncodeError:
-                # Last resort: encode to ASCII with replacement characters
-                print(table_output.encode('ascii', 'replace').decode('ascii'))
+        click.echo_via_pager(table_output)
     else:
-        try:
-            print(table_output)
-        except UnicodeEncodeError:
-            # Fallback to ASCII with replacement characters
-            print(table_output.encode('ascii', 'replace').decode('ascii'))
+        click.echo(table_output)
 
 
 def execute_bql_command_with_click(parse_query_func, format_output_func,
@@ -299,20 +287,8 @@ def execute_bql_command_with_click(parse_query_func, format_output_func,
     # Use pager unless explicitly disabled with --no-pager
     use_pager = not getattr(args, 'no_pager', False)
     
+    # With UTF-8 encoding configured globally, we can simplify output handling
     if use_pager:
-        # Handle Unicode encoding issues when using pager
-        try:
-            click.echo_via_pager(table_output)
-        except UnicodeEncodeError:
-            # Fallback to direct output with error handling
-            try:
-                click.echo(table_output)
-            except UnicodeEncodeError:
-                # Last resort: encode to ASCII with replacement characters
-                click.echo(table_output.encode('ascii', 'replace').decode('ascii'))
+        click.echo_via_pager(table_output)
     else:
-        try:
-            click.echo(table_output)
-        except UnicodeEncodeError:
-            # Fallback to ASCII with replacement characters
-            click.echo(table_output.encode('ascii', 'replace').decode('ascii'))
+        click.echo(table_output)
