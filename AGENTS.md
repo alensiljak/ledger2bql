@@ -45,4 +45,7 @@ To run tests, also run with `uv`:
 ```sh
 uv run pytest
 ```
-Use `pytest` for unit tests. Do not introduce new frameworks.
+
+- Tests are using `sample_ledger.bean` file as the only source of data.
+- Use `pytest` for unit tests. Do not introduce new frameworks.
+- When creating new data for tests, first consider adding it to the default journal file, instead of creating new journal files.

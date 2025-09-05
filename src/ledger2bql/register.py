@@ -16,7 +16,6 @@ from .utils import add_common_click_arguments, execute_bql_command_with_click, p
 @click.pass_context
 def reg_command(ctx, account_regex, **kwargs):
     """Translate ledger-cli register command arguments to a Beanquery (BQL) query."""
-    
     # Package arguments in a way compatible with the existing code
     class Args:
         def __init__(self, account_regex, **kwargs):
@@ -118,7 +117,8 @@ def parse_query(args):
         query += " WHERE " + " AND ".join(where_clauses)
 
     # Handle sorting
-    if hasattr(args, 'sort') and args.sort:
+    # Ignore default sorting by 'account' for register command
+    if hasattr(args, 'sort') and args.sort and args.sort != 'account':
         sort_keys = []
         for key in args.sort.split(','):
             key = key.strip()
