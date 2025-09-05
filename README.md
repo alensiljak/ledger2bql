@@ -16,38 +16,6 @@ This is very convenient for quick lookups and everyday insights into your financ
 
 For more background on Ledger's query syntax, see the [docs](https://ledger-cli.org/doc/ledger3.html).
 
-# Development
-
-Clone the repository.
-Add an `.env` file, specifying the `BEANCOUNT_FILE` location.
-```
-BEANCOUNT_FILE=tests/sample_ledger.bean
-```
-Install the dependencies.
-```sh
-uv sync
-```
-
-Build
-```sh
-uv build
-```
-
-Run
-```sh
-uv run ledger2bql
-```
-or run
-```sh
-l ...
-```
-
-Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
-
-## Tests
-
-All tests use the `.env` file in the `tests/` directory to locate the sample ledger file. Make sure this file is properly configured with the correct path to `sample_ledger.bean`.
-
 # Usage
 
 If you are using Unicode characters in your Beancount journal, you may want to set
@@ -84,6 +52,38 @@ ledger2bql
 ledger2bql bal --help
 ledger2bql reg --help
 ```
+
+# Development
+
+Clone the repository.
+Add an `.env` file, specifying the `BEANCOUNT_FILE` location.
+```
+BEANCOUNT_FILE=tests/sample_ledger.bean
+```
+Install the dependencies.
+```sh
+uv sync
+```
+
+Build
+```sh
+uv build
+```
+
+Run
+```sh
+uv run ledger2bql
+```
+or run
+```sh
+l ...
+```
+
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+
+## Tests
+
+All tests use the `.env` file in the `tests/` directory to locate the sample ledger file. Make sure this file is properly configured with the correct path to `sample_ledger.bean`.
 
 # Output
 
