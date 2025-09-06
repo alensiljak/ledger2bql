@@ -8,11 +8,12 @@ import click
 
 from .balance import bal_command
 from .register import reg_command
+from .query import query_command
 
 
 class AliasedGroup(click.Group):
     """A click Group that supports command aliases."""
-    
+
     def get_command(self, ctx, cmd_name):
         """Get the command by name or alias."""
         # Try the normal way first
@@ -23,7 +24,8 @@ class AliasedGroup(click.Group):
         # Check for aliases
         aliases = {
             'b': 'bal',
-            'r': 'reg'
+            'r': 'reg',
+            'q': 'query'
         }
         
         if cmd_name in aliases:
@@ -60,7 +62,7 @@ def cli(ctx, version):
             v = "local"
         click.echo(f"ledger2bql v{v}")
         click.echo(ctx.get_help())
-        click.echo("\nNote: 'b' is an alias for 'bal', and 'r' is an alias for 'reg'")
+        click.echo("\nNote: 'b' is an alias for 'bal', 'r' is an alias for 'reg', and 'q' is an alias for 'query'")
         click.echo("You can call any command with '--help' to get the list of available parameters and options.")
         sys.exit(0)
 
@@ -68,6 +70,7 @@ def cli(ctx, version):
 # Add the subcommands
 cli.add_command(bal_command)
 cli.add_command(reg_command)
+cli.add_command(query_command)
 
 
 def main():

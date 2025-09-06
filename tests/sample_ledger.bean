@@ -83,3 +83,7 @@ plugin "beancount.plugins.implicit_prices"
 2025-09-01 * "Großer Priel Klettersteig" ""
   Expenses:Accommodation 25 EUR
   Assets:Cash:Pocket-Money
+
+2025-09-02 query "holidays" "select * where payee ~ 'holiday'"
+ 
+ 
