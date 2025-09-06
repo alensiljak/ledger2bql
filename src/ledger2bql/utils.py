@@ -298,6 +298,10 @@ def execute_bql_command_with_click(
         click.echo("No records found.")
         return
 
+    # Display the actual query name if it's different from the provided one
+    if hasattr(args, "actual_query_name") and args.actual_query_name != args.query_name:
+        click.echo(f"Running query: {args.actual_query_name}")
+
     # Print the BQL query
     click.echo(f"\nYour BQL query is:\n{query}\n")
 

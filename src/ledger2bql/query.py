@@ -48,11 +48,15 @@ def parse_query(args):
     # Try case-insensitive match
     for query_entry in query_entries:
         if query_entry.name.lower() == args.query_name.lower():
+            # Store the actual query name for display
+            args.actual_query_name = query_entry.name
             return query_entry.query_string
 
     # Try partial matching - look for queries that contain the search term
     for query_entry in query_entries:
         if args.query_name.lower() in query_entry.name.lower():
+            # Store the actual query name for display
+            args.actual_query_name = query_entry.name
             return query_entry.query_string
 
     # If no match found, raise an error

@@ -15,6 +15,8 @@ def test_query_command():
     assert "Your BQL query is:" in result.stdout
     assert "select * where payee ~ 'holiday'" in result.stdout
     assert "Holiday" in result.stdout
+    # Should not display "Running query" when exact match
+    assert "Running query:" not in result.stdout
     print("Test 1 passed: Full command with exact name")
 
     # Test 2: Short alias with exact name
@@ -29,6 +31,8 @@ def test_query_command():
     assert "Your BQL query is:" in result.stdout
     assert "select * where payee ~ 'holiday'" in result.stdout
     assert "Holiday" in result.stdout
+    # Should not display "Running query" when exact match
+    assert "Running query:" not in result.stdout
     print("Test 2 passed: Short alias with exact name")
 
     # Test 3: Short alias with partial name
@@ -43,6 +47,8 @@ def test_query_command():
     assert "Your BQL query is:" in result.stdout
     assert "select * where payee ~ 'holiday'" in result.stdout
     assert "Holiday" in result.stdout
+    # Should display "Running query" when partial match
+    assert "Running query: holidays" in result.stdout
     print("Test 3 passed: Short alias with partial name")
 
     # Test 4: Non-existent query
