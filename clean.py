@@ -1,6 +1,7 @@
-'''
+"""
 Clean up the build directories.
-'''
+"""
+
 # clean.py
 import shutil
 import os

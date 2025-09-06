@@ -84,6 +84,5 @@ plugin "beancount.plugins.implicit_prices"
   Expenses:Accommodation 25 EUR
   Assets:Cash:Pocket-Money
 
-2025-09-02 query "holidays" "select * where payee ~ 'holiday'"
- 
+2025-09-02 query "holidays" "select * where payee ~ 'holiday' and account ~ 'expenses'"
  

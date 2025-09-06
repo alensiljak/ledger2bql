@@ -7,8 +7,8 @@ from tests.test_utils import run_bal_command, extract_table_data
 
 def test_bal_with_hierarchy():
     # Act
-    result = run_bal_command(['--hierarchy'])
-    
+    result = run_bal_command(["--hierarchy"])
+
     # Assert
     assert result.exit_code == 0
     table_lines = extract_table_data(result.output.splitlines())
@@ -21,7 +21,7 @@ def test_bal_with_hierarchy():
     assert "| Equity                   |" in table_output
     assert "| Expenses                 |" in table_output
     assert "| Income                   |" in table_output
-    
+
     # Check that individual accounts are also present
     assert "| Assets:Bank:Bank03581    |" in table_output
     assert "| Assets:Bank:Checking     |" in table_output
@@ -33,8 +33,8 @@ def test_bal_with_hierarchy():
 
 def test_bal_with_hierarchy_and_filter():
     # Act
-    result = run_bal_command(['--hierarchy', 'Assets'])
-    
+    result = run_bal_command(["--hierarchy", "Assets"])
+
     # Assert
     assert result.exit_code == 0
     table_lines = extract_table_data(result.output.splitlines())
@@ -44,7 +44,7 @@ def test_bal_with_hierarchy_and_filter():
     assert "| Assets                   |" in table_output
     assert "| Assets:Bank              |" in table_output
     assert "| Assets:Cash              |" in table_output
-    
+
     # Check that individual Assets accounts are also present
     assert "| Assets:Bank:Bank03581    |" in table_output
     assert "| Assets:Bank:Checking     |" in table_output
@@ -52,7 +52,7 @@ def test_bal_with_hierarchy_and_filter():
     assert "| Assets:Cash:BAM          |" in table_output
     assert "| Assets:Cash:Pocket-Money |" in table_output
     assert "| Assets:Cash:USD          |" in table_output
-    
+
     # Check that other account types are not present
     assert "Equity" not in table_output
     assert "Expenses" not in table_output
@@ -61,8 +61,8 @@ def test_bal_with_hierarchy_and_filter():
 
 def test_bal_with_hierarchy_and_exchange():
     # Act
-    result = run_bal_command(['--hierarchy', '-X', 'USD'])
-    
+    result = run_bal_command(["--hierarchy", "-X", "USD"])
+
     # Assert
     assert result.exit_code == 0
     table_lines = extract_table_data(result.output.splitlines())
@@ -75,7 +75,7 @@ def test_bal_with_hierarchy_and_exchange():
     assert "| Equity                   |" in table_output
     assert "| Expenses                 |" in table_output
     assert "| Income                   |" in table_output
-    
+
     # Check that individual accounts are also present
     assert "| Assets:Bank:Bank03581    |" in table_output
     assert "| Assets:Bank:Checking     |" in table_output
@@ -87,8 +87,8 @@ def test_bal_with_hierarchy_and_exchange():
 
 def test_bal_with_hierarchy_and_total():
     # Act
-    result = run_bal_command(['-H', '-T'])
-    
+    result = run_bal_command(["-H", "-T"])
+
     # Assert
     assert result.exit_code == 0
     table_lines = extract_table_data(result.output.splitlines())
@@ -101,7 +101,7 @@ def test_bal_with_hierarchy_and_total():
     assert "| Equity                   |" in table_output
     assert "| Expenses                 |" in table_output
     assert "| Income                   |" in table_output
-    
+
     # Check that individual accounts are also present
     assert "| Assets:Bank:Bank03581    |" in table_output
     assert "| Assets:Bank:Checking     |" in table_output
@@ -109,32 +109,52 @@ def test_bal_with_hierarchy_and_total():
     assert "| Assets:Cash:BAM          |" in table_output
     assert "| Assets:Cash:Pocket-Money |" in table_output
     assert "| Assets:Cash:USD          |" in table_output
-    
+
     # Check that the total row is present
     assert "| Total                    |" in table_output
 
 
 def test_bal_with_collapse_level_2():
     # Act
-    result = run_bal_command(['--depth', '2'])
-    
+    result = run_bal_command(["--depth", "2"])
+
     # Assert
     assert result.exit_code == 0
     table_lines = extract_table_data(result.output.splitlines())
     table_output = "\n".join(table_lines)
 
     # Check that the accounts are collapsed to level 2
-    assert "| Assets:Bank             |       3,000.00 CHF 1,859.65 EUR |" in table_output
-    assert "| Assets:Cash             | -25.00 BAM -45.00 EUR -7.00 USD |" in table_output  # Updated Pocket-Money balance
-    assert "| Equity:Opening-Balances |                   -1,000.00 EUR |" in table_output
-    assert "| Equity:Stocks           |                       12.00 ABC |" in table_output
-    assert "| Expenses:Accommodation  |                       25.00 EUR |"  # Added new transaction
-    assert "| Expenses:Food           |            100.00 EUR 25.00 BAM |" in table_output
-    assert "| Expenses:Sweets         |                       20.00 EUR |" in table_output
-    assert "| Expenses:Transport      |              7.00 USD 25.00 EUR |" in table_output
-    assert "| Income:Other            |                   -3,000.00 CHF |" in table_output
-    assert "| Income:Salary           |                   -1,000.00 EUR |" in table_output
-    
+    assert (
+        "| Assets:Bank             |       3,000.00 CHF 1,859.65 EUR |" in table_output
+    )
+    assert (
+        "| Assets:Cash             | -25.00 BAM -45.00 EUR -7.00 USD |" in table_output
+    )  # Updated Pocket-Money balance
+    assert (
+        "| Equity:Opening-Balances |                   -1,000.00 EUR |" in table_output
+    )
+    assert (
+        "| Equity:Stocks           |                       12.00 ABC |" in table_output
+    )
+    assert (
+        "| Expenses:Accommodation  |                       25.00 EUR |"
+    )  # Added new transaction
+    assert (
+        "| Expenses:Food           |            100.00 EUR 25.00 BAM |" in table_output
+    )
+    assert (
+        "| Expenses:Sweets         |                       20.00 EUR |" in table_output
+    )
+    assert (
+        "| Expenses:Transport      |              7.00 USD 25.00 EUR |" in table_output
+    )
+    assert (
+        "| Income:Other            |                   -3,000.00 CHF |" in table_output
+    )
+    assert (
+        "| Income:Salary           |                   -1,000.00 EUR |" in table_output
+    )
+
     # Check that individual bank accounts are not present (they should be collapsed)
     assert "Assets:Bank:Checking" not in table_output
     assert "Assets:Bank:Savings" not in table_output
@@ -143,19 +163,27 @@ def test_bal_with_collapse_level_2():
 
 def test_bal_with_collapse_level_1():
     # Act
-    result = run_bal_command(['--depth', '1'])
-    
+    result = run_bal_command(["--depth", "1"])
+
     # Assert
     assert result.exit_code == 0
     table_lines = extract_table_data(result.output.splitlines())
     table_output = "\n".join(table_lines)
 
     # Check that the accounts are collapsed to level 1
-    assert "| Assets    | 3,000.00 CHF 1,814.65 EUR -25.00 BAM -7.00 USD |" in table_output  # Updated total (1839.65 - 25 = 1814.65)
-    assert "| Equity    |                        -1,000.00 EUR 12.00 ABC |" in table_output
-    assert "| Expenses  |                  170.00 EUR 25.00 BAM 7.00 USD |" in table_output  # Updated total (145 + 25 = 170)
-    assert "| Income    |                    -3,000.00 CHF -1,000.00 EUR |" in table_output
-    
+    assert (
+        "| Assets    | 3,000.00 CHF 1,814.65 EUR -25.00 BAM -7.00 USD |" in table_output
+    )  # Updated total (1839.65 - 25 = 1814.65)
+    assert (
+        "| Equity    |                        -1,000.00 EUR 12.00 ABC |" in table_output
+    )
+    assert (
+        "| Expenses  |                  170.00 EUR 25.00 BAM 7.00 USD |" in table_output
+    )  # Updated total (145 + 25 = 170)
+    assert (
+        "| Income    |                    -3,000.00 CHF -1,000.00 EUR |" in table_output
+    )
+
     # Check that individual accounts are not present (they should be collapsed)
     assert "Assets:Bank:Checking" not in table_output
     assert "Assets:Cash:Pocket-Money" not in table_output

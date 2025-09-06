@@ -1,12 +1,12 @@
 """
 Tests for the amount filter currency uppercasing feature.
 """
+
 import unittest
 from src.ledger2bql.utils import parse_amount_filter
 
 
 class TestAmountFilterCurrencyUppercasing(unittest.TestCase):
-
     def test_amount_filter_currency_uppercase(self):
         """Test that amount filter automatically uppercases the currency code."""
         # Test with lowercase currency
@@ -34,5 +34,5 @@ class TestAmountFilterCurrencyUppercasing(unittest.TestCase):
         self.assertIsNone(cur)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

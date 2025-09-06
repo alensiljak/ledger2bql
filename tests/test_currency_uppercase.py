@@ -4,11 +4,12 @@ Tests for the currency uppercasing feature.
 
 from tests.test_utils import run_bal_command
 
+
 def test_currency_filter_uppercase():
     """Test that currency filter automatically uppercases the currency code."""
 
     # Act
-    result = run_bal_command(['-c', 'eur'])
+    result = run_bal_command(["-c", "eur"])
 
     # Assert
     assert result.exit_code == 0

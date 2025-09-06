@@ -1,15 +1,16 @@
-'''
+"""
 parser tests
-'''
+"""
 
 from ledger2bql.balance import parse_query
 
 
 def test_default_sort():
-    '''
+    """
     Test adding sort criteria by default, when not specified.
     The accounts should be listed alphabetically.
-    '''
+    """
+
     # Create a mock args object with default values
     class Args:
         def __init__(self):
@@ -18,7 +19,7 @@ def test_default_sort():
             self.end = None
             self.date_range = None
             self.empty = False
-            self.sort = 'account'
+            self.sort = "account"
             self.limit = None
             self.amount = []
             self.currency = None
@@ -27,7 +28,7 @@ def test_default_sort():
             self.no_pager = False
             self.depth = None
             self.zero = False
-    
+
     args = Args()
     generated_bql = parse_query(args)
 
