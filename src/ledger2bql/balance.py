@@ -553,6 +553,14 @@ def format_output(output: list, args) -> list:
                 row = (collapsed_account, MockInventory(currencies))
             output.append(row)
 
+    # If using hierarchy, determine the minimum depth for total calculation
+    min_depth = None
+    if hasattr(args, "hierarchy") and args.hierarchy and args.total:
+        # Find the minimum depth among all accounts
+        depths = [row[0].count(":") + 1 for row in output if row]
+        if depths:
+            min_depth = min(depths)
+
     for row in list(output):  # Ensure output is a list of lists
         if not row:
             continue
@@ -596,21 +604,31 @@ def format_output(output: list, args) -> list:
 
             # Accumulate for grand total
             if args.total:
-                # Accumulate original currencies
-                for currency, amount in balance_inventory.items():
-                    # Check if the currency is a tuple and extract the string
-                    if isinstance(currency, tuple):
-                        currency_str = currency[0]
-                    else:
-                        currency_str = currency
+                # When using hierarchy, only include accounts at the minimum depth to avoid double-counting
+                should_include_in_total = True
+                if (
+                    hasattr(args, "hierarchy")
+                    and args.hierarchy
+                    and min_depth is not None
+                ):
+                    should_include_in_total = account_depth == min_depth
 
-                    if currency_str in grand_total:
-                        grand_total[currency_str] += amount.units.number
-                    else:
-                        grand_total[currency_str] = amount.units.number
+                if should_include_in_total:
+                    # Accumulate original currencies
+                    for currency, amount in balance_inventory.items():
+                        # Check if the currency is a tuple and extract the string
+                        if isinstance(currency, tuple):
+                            currency_str = currency[0]
+                        else:
+                            currency_str = currency
 
-                # Accumulate converted amount
-                converted_total += converted_amount.number
+                        if currency_str in grand_total:
+                            grand_total[currency_str] += amount.units.number
+                        else:
+                            grand_total[currency_str] = amount.units.number
+
+                    # Accumulate converted amount
+                    converted_total += converted_amount.number
 
             new_row = list(row)
             new_row[1] = formatted_balance
@@ -637,10 +655,20 @@ def format_output(output: list, args) -> list:
 
                 # Accumulate for grand total
                 if args.total:
-                    if currency_str in grand_total:
-                        grand_total[currency_str] += amount.units.number
-                    else:
-                        grand_total[currency_str] = amount.units.number
+                    # When using hierarchy, only include accounts at the minimum depth to avoid double-counting
+                    should_include_in_total = True
+                    if (
+                        hasattr(args, "hierarchy")
+                        and args.hierarchy
+                        and min_depth is not None
+                    ):
+                        should_include_in_total = account_depth == min_depth
+
+                    if should_include_in_total:
+                        if currency_str in grand_total:
+                            grand_total[currency_str] += amount.units.number
+                        else:
+                            grand_total[currency_str] = amount.units.number
 
             formatted_balance = " ".join(balance_parts)
 

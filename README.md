@@ -83,7 +83,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for more detai
 
 All tests use the `.env` file in the `tests/` directory to locate the sample ledger file. Make sure this file is properly configured with the correct path to `sample_ledger.bean`.
 
-# Output
+# Commands
 
 ## Balance
 
@@ -227,6 +227,31 @@ SELECT date, account, payee, narration, position
 | 2025-03-01 | Assets:Bank:Checking     | Grocery Store  | Groceries        |   -100.00 EUR |        0.00 EUR |
 +------------+--------------------------+----------------+------------------+---------------+-----------------+
 ```
+
+## Query
+
+The query command allows you to execute named queries defined in your Beancount file. These queries can be defined using the `query` directive in your Beancount file:
+
+```beancount
+2025-09-02 query "holidays" "select * where payee ~ 'holiday' and account ~ 'expenses'"
+```
+
+To execute a named query, use the `query` command (or its short alias `q`):
+
+```sh
+l q holidays
+# or
+l query holidays
+```
+
+When using a partial name match, the system will display which actual query is being executed:
+
+```sh
+l q holi
+# Will show: "Running query: holidays" and then execute the "holidays" query
+```
+
+This is useful when you have long query names but want to use shorter aliases to execute them.
 
 # Automatic Paging
 
