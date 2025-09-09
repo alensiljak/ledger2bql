@@ -29,6 +29,8 @@ plugin "beancount.plugins.implicit_prices"
 2025-01-01 price EUR  1.0268  USD
 2025-01-01 price EUR  1.1325  USD
 2025-01-10 price CHF  1.0647  EUR
+2025-03-30 price ABC  1.20    EUR
+2025-04-15 price ABC  1.35    EUR
 
 ; transactions
 

@@ -12,7 +12,7 @@ def test_lots_no_args():
     # Assert
     assert result.exit_code == 0
     assert (
-        "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as price, cost(position) as cost"
+        "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as price, cost(position) as cost, value(position) as value"
         in result.output
     )
     assert "cost_number IS NOT NULL" in result.output
@@ -63,7 +63,7 @@ def test_lots_average():
     # Assert
     assert result.exit_code == 0
     assert (
-        "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as price, cost_currency"
+        "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as price, cost_currency, value(sum(position)) as value"
         in result.output
     )
 
