@@ -63,7 +63,7 @@ def test_lots_average():
     # Assert
     assert result.exit_code == 0
     assert (
-        "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as price, cost_currency, value(sum(position)) as value"
+        "SELECT MAX(date) as date, account, currency(units(position)) as symbol, SUM(units(position)) as quantity, SUM(cost_number * number(units(position))) / SUM(number(units(position))) as avg_price, cost(SUM(position)) as total_cost, value(SUM(position)) as value"
         in result.output
     )
 

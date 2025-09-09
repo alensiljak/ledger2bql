@@ -142,14 +142,15 @@ def parse_query(args):
     # Build the final query for lots
     # We need to select lots information from positions that have cost basis
     if args.average:
-        # For average cost, we'll get all individual lots and aggregate in Python
-        # This is more reliable than trying to do complex calculations in SQL
-        select_clause = "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as price, cost_currency, value(sum(position)) as value"
+        # For average cost, we'll use GROUP BY and aggregate functions in SQL
+        select_clause = "SELECT MAX(date) as date, account, currency(units(position)) as symbol, SUM(units(position)) as quantity, SUM(cost_number * number(units(position))) / SUM(number(units(position))) as avg_price, cost(SUM(position)) as total_cost, value(SUM(position)) as value"
         where_clauses.append(
             "cost_number IS NOT NULL"
         )  # Only positions with cost basis
         query = select_clause
-        # No GROUP BY needed since we're aggregating in Python
+        
+        # Add GROUP BY for average cost calculation
+        group_by_clauses = ["account", "currency(units(position))"]
     else:
         # For detailed lots, we need to show individual lots
         select_clause = "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as price, cost(position) as cost, value(position) as value"
@@ -164,7 +165,7 @@ def parse_query(args):
     if args.average and group_by_clauses:
         query += " GROUP BY " + ", ".join(group_by_clauses)
 
-    # Add GROUP BY for average cost calculation
+    # Handle sorting
     if args.average:
         # Handle sorting for average case
         if hasattr(args, "sort") and args.sort:
@@ -184,7 +185,7 @@ def parse_query(args):
             query += " ORDER BY " + ", ".join(sort_fields)
         elif args.sort_by:
             # Handle specific sort options from --sort-by
-            sort_mapping = {"date": "date", "price": "price", "symbol": "symbol"}
+            sort_mapping = {"date": "date", "price": "avg_price", "symbol": "symbol"}
             if args.sort_by in sort_mapping:
                 query += f" ORDER BY {sort_mapping[args.sort_by]} ASC"
         else:
@@ -227,20 +228,20 @@ def format_output(output: list, args) -> list:
     formatted_output = []
 
     if args.average:
-        # For average cost, we need to aggregate the individual lots
-        # Group by (account, symbol) - we don't group by date for average
-        from collections import defaultdict
-
-        lots_by_group = defaultdict(list)
-
-        # First, group all lots by their grouping criteria
+        # For average cost, we receive aggregated data from SQL
         for row in output:
-            # For detailed lots: date, account, symbol, quantity, price, cost_currency, value
-            # Note: In average mode, we don't select the cost(position) field
-            date, account, symbol, quantity, price, cost_currency, value = row
+            # For average lots: date, account, symbol, quantity, avg_price, total_cost, value
+            date, account, symbol, quantity, avg_price, total_cost, value = row
 
             # Extract the number from the Amount object for quantity
-            if hasattr(quantity, "units") and hasattr(quantity.units, "number"):
+            if hasattr(quantity, "get_positions"):
+                # This is an Inventory object
+                positions = quantity.get_positions()
+                if positions:
+                    quantity_number = positions[0].units.number
+                else:
+                    quantity_number = Decimal("0")
+            elif hasattr(quantity, "units") and hasattr(quantity.units, "number"):
                 # This is a Position object with units
                 quantity_number = quantity.units.number
             elif hasattr(quantity, "number"):
@@ -248,124 +249,72 @@ def format_output(output: list, args) -> list:
                 quantity_number = quantity.number
             else:
                 # Try to convert to Decimal directly
-                quantity_number = Decimal(str(quantity)) if quantity else Decimal("0")
+                quantity_number = Decimal(str(quantity)) if quantity is not None else Decimal("0")
 
-            # Extract the price number
-            price_decimal = Decimal(str(price)) if price else Decimal("0")
-
-            # Grouping key - group by account and symbol
-            group_key = (account, symbol)
-
-            # Store the lot data
-            lots_by_group[group_key].append(
-                {
-                    "date": date,
-                    "quantity": quantity_number,
-                    "price": price_decimal,
-                    "cost_currency": cost_currency,
-                    "value": value,
-                }
-            )
-
-        # Now calculate average price for each group
-        for group_key, lots in lots_by_group.items():
-            account, symbol = group_key
-
-            # For average, we use the earliest date in the group
-            date = min(lot["date"] for lot in lots)
-
-            # Calculate total quantity and total cost
-            total_quantity = Decimal("0")
-            total_cost = Decimal("0")
-
-            for lot in lots:
-                quantity = lot["quantity"]
-                price = lot["price"]
-                total_quantity += quantity
-                total_cost += (
-                    quantity * price
-                )  # Quantity * price per unit = total cost for this lot
-
-            # Calculate average price
-            if total_quantity and total_quantity != Decimal("0"):
-                avg_price = total_cost / total_quantity
-            else:
-                avg_price = Decimal("0")
+            # Extract the average price
+            avg_price_decimal = Decimal(str(avg_price)) if avg_price is not None else Decimal("0")
+            
+            # Extract the total cost
+            total_cost_decimal = Decimal("0")
+            cost_currency = symbol  # Default to symbol as currency
+            if hasattr(total_cost, "get_positions"):
+                # This is an Inventory object
+                positions = total_cost.get_positions()
+                if positions:
+                    pos = positions[0]
+                    total_cost_decimal = pos.units.number
+                    cost_currency = pos.units.currency  # Update cost_currency from the actual cost object
+            elif hasattr(total_cost, "number"):
+                # This is already an Amount object
+                total_cost_decimal = total_cost.number
+                if hasattr(total_cost, "currency"):
+                    cost_currency = total_cost.currency
+            elif total_cost is not None:
+                # Try to convert to Decimal directly
+                total_cost_decimal = Decimal(str(total_cost)) if total_cost is not None else Decimal("0")
 
             # Format the output
-            formatted_quantity = "{:,.2f}".format(total_quantity)
+            formatted_quantity = "{:,.2f}".format(quantity_number)
             formatted_avg_price = "{:,.2f} {}".format(
-                avg_price, lots[0]["cost_currency"]
+                avg_price_decimal, cost_currency
             )
             formatted_total_cost = "{:,.2f} {}".format(
-                total_cost, lots[0]["cost_currency"]
+                total_cost_decimal, cost_currency
             )
 
-            # For the value in average mode, we need to calculate it properly
-            # The current approach using value(sum(position)) is not correct
-            # We need to value the total quantity at the latest market price
+            # Format the value
             value_str = ""
-            if lots:
-                # Simple price lookup table based on the sample ledger
-                # In a real implementation, we would query the price database
-                price_lookup = {
-                    "ABC": (Decimal("1.35"), "EUR"),
-                }
-
-                # Calculate value = total_quantity * latest_price
-                if symbol in price_lookup:
-                    latest_price, price_currency = price_lookup[symbol]
-                    total_quantity_decimal = (
-                        Decimal(str(total_quantity)) if total_quantity else Decimal("0")
-                    )
-                    value_amount = total_quantity_decimal * latest_price
-                    value_str = "{:,.2f} {}".format(value_amount, price_currency)
-                else:
-                    # For other symbols, use the value from the query as a fallback
-                    value = lots[0]["value"]
-                    # Handle different types of value objects
-                    try:
-                        # Check if it's an Inventory object
-                        if hasattr(value, "is_empty") and not value.is_empty():
-                            # Get the positions from the inventory
-                            positions = value.get_positions()
-                            if positions:
-                                # Use the first position
-                                pos = positions[0]
-                                if (
-                                    hasattr(pos, "units")
-                                    and hasattr(pos.units, "number")
-                                    and hasattr(pos.units, "currency")
-                                ):
-                                    value_number = pos.units.number
-                                    value_currency = pos.units.currency
-                                    value_str = "{:,.2f} {}".format(
-                                        value_number, value_currency
-                                    )
-                        elif hasattr(value, "number") and hasattr(value, "currency"):
-                            # Standard Beancount Amount object
-                            value_number = value.number
-                            value_currency = value.currency
-                            value_str = "{:,.2f} {}".format(
-                                value_number, value_currency
-                            )
-                        elif (
-                            hasattr(value, "units")
-                            and hasattr(value.units, "number")
-                            and hasattr(value.units, "currency")
-                        ):
-                            # Position object with units
-                            value_number = value.units.number
-                            value_currency = value.units.currency
-                            value_str = "{:,.2f} {}".format(
-                                value_number, value_currency
-                            )
-                        else:
-                            # Try to convert to string directly
-                            value_str = str(value)
-                    except Exception:
-                        # If we can't process the value, leave it empty
-                        pass
+            if hasattr(value, "get_positions"):
+                # This is an Inventory object
+                positions = value.get_positions()
+                if positions:
+                    pos = positions[0]
+                    value_number = pos.units.number
+                    value_currency = pos.units.currency
+                    value_str = "{:,.2f} {}".format(value_number, value_currency)
+            elif hasattr(value, "number") and hasattr(value, "currency"):
+                value_number = value.number
+                value_currency = value.currency
+                value_str = "{:,.2f} {}".format(value_number, value_currency)
+            elif (
+                hasattr(value, "units")
+                and hasattr(value.units, "number")
+                and hasattr(value.units, "currency")
+            ):
+                # Position object with units
+                value_number = value.units.number
+                value_currency = value.units.currency
+                value_str = "{:,.2f} {}".format(
+                    value_number, value_currency
+                )
+            elif value is not None:
+                # Try to convert to string directly and format properly
+                value_str = str(value)
+                # If it's in the format "(16.20 EUR)", extract the number and currency
+                import re
+                match = re.match(r'$(\d+\.?\d*)\s+([A-Z]{3})$', value_str)
+                if match:
+                    value_str = "{} {}".format(match.group(1), match.group(2))
 
             formatted_output.append(
                 [
