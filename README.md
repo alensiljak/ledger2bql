@@ -253,6 +253,63 @@ l q holi
 
 This is useful when you have long query names but want to use shorter aliases to execute them.
 
+## Lots
+
+The lots command lists investment lots with their purchase details. This is particularly useful for tracking investments and their cost basis.
+
+Running
+```sh
+l l
+```
+will output
+```
+Your BQL query is:
+SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as cost, cost_currency WHERE cost_number IS NOT NULL ORDER BY date ASC
+
++------------+---------------+------------+----------+----------+
+| Date       | Account       |   Quantity | Symbol   |     Cost |
+|------------+---------------+------------+----------+----------|
+| 2025-04-01 | Equity:Stocks |          5 | ABC      | 1.25 EUR |
+| 2025-04-02 | Equity:Stocks |          7 | ABC      | 1.30 EUR |
++------------+---------------+------------+----------+----------+
+```
+
+### Sorting Options
+
+You can sort the lots by different criteria:
+
+- `--sort-by date` - Sort by transaction date (default)
+- `--sort-by price` - Sort by purchase price
+- `--sort-by symbol` - Sort by commodity symbol
+
+```sh
+# Sort by purchase price
+l l --sort-by price
+
+# Sort by symbol
+l l --sort-by symbol
+```
+
+### Average Cost
+
+To show average costs for each symbol, use the `--average` or `-A` flag:
+
+```sh
+l l --average
+```
+
+### Filtering
+
+Like other commands, you can filter lots by account name:
+
+```sh
+# Show lots only from Equity accounts
+l l Equity
+
+# Show lots from specific accounts
+l l Stocks
+```
+
 # Automatic Paging
 
 By default, ledger2bql uses your system's pager (like `less` on Unix systems or `more` on Windows) to display output. This is especially useful when viewing large reports with many transactions.
