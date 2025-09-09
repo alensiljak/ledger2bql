@@ -51,7 +51,6 @@ def extract_table_data(output_lines):
                 end_index = i
                 break
 
-
     if start_index != -1 and end_index != -1:
         # The actual data starts after the header and separator lines
         for line in output_lines[start_index + 3 : end_index]:

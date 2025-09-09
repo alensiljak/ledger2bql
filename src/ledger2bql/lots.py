@@ -30,7 +30,7 @@ from .utils import (
 @add_common_click_arguments
 def lots_command(account_regex, sort_by, average, **kwargs):
     """Translate ledger-cli lots command arguments to a Beanquery (BQL) query."""
-    
+
     # Package arguments in a way compatible with the existing code
     class Args:
         def __init__(self, account_regex, sort_by, average, **kwargs):
@@ -44,11 +44,18 @@ def lots_command(account_regex, sort_by, average, **kwargs):
 
     # Determine headers for the table
     if average:
-        headers = ["Date", "Account", "Quantity", "Symbol", "Average Cost", "Total Cost"]
+        headers = [
+            "Date",
+            "Account",
+            "Quantity",
+            "Symbol",
+            "Average Price",
+            "Total Cost",
+        ]
         alignments = ["left", "left", "right", "left", "right", "right"]
     else:
-        headers = ["Date", "Account", "Quantity", "Symbol", "Cost"]
-        alignments = ["left", "left", "right", "left", "right"]
+        headers = ["Date", "Account", "Quantity", "Symbol", "Price", "Cost"]
+        alignments = ["left", "left", "right", "left", "right", "right"]
 
     # Execute the command
     execute_bql_command_with_click(
@@ -135,19 +142,23 @@ def parse_query(args):
     if args.average:
         # For average cost, we'll get all individual lots and aggregate in Python
         # This is more reliable than trying to do complex calculations in SQL
-        select_clause = "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as cost, cost_currency"
-        where_clauses.append("cost_number IS NOT NULL")  # Only positions with cost basis
+        select_clause = "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as price, cost_currency"
+        where_clauses.append(
+            "cost_number IS NOT NULL"
+        )  # Only positions with cost basis
         query = select_clause
         # No GROUP BY needed since we're aggregating in Python
     else:
         # For detailed lots, we need to show individual lots
-        select_clause = "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as cost, cost_currency"
-        where_clauses.append("cost_number IS NOT NULL")  # Only positions with cost basis
+        select_clause = "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as price, cost(position) as cost"
+        where_clauses.append(
+            "cost_number IS NOT NULL"
+        )  # Only positions with cost basis
         query = select_clause
-    
+
     if where_clauses:
         query += " WHERE " + " AND ".join(where_clauses)
-    
+
     # Add GROUP BY for average cost calculation
     if args.average:
         # No GROUP BY needed since we're aggregating in Python
@@ -169,11 +180,7 @@ def parse_query(args):
             query += " ORDER BY " + ", ".join(sort_fields)
         elif args.sort_by:
             # Handle specific sort options from --sort-by
-            sort_mapping = {
-                "date": "date",
-                "price": "cost_number",
-                "symbol": "symbol"
-            }
+            sort_mapping = {"date": "date", "price": "price", "symbol": "symbol"}
             if args.sort_by in sort_mapping:
                 query += f" ORDER BY {sort_mapping[args.sort_by]} ASC"
         else:
@@ -182,7 +189,7 @@ def parse_query(args):
     else:
         if group_by_clauses:
             query += " GROUP BY " + ", ".join(group_by_clauses)
-        
+
         # Handle sorting
         if hasattr(args, "sort") and args.sort:
             sort_fields = []
@@ -201,11 +208,7 @@ def parse_query(args):
             query += " ORDER BY " + ", ".join(sort_fields)
         elif args.sort_by:
             # Handle specific sort options from --sort-by
-            sort_mapping = {
-                "date": "date",
-                "price": "cost_number",
-                "symbol": "symbol"
-            }
+            sort_mapping = {"date": "date", "price": "price", "symbol": "symbol"}
             if args.sort_by in sort_mapping:
                 query += f" ORDER BY {sort_mapping[args.sort_by]} ASC"
         else:
@@ -218,6 +221,7 @@ def parse_query(args):
 def format_output(output: list, args) -> list:
     """Formats the raw output from the BQL query into a pretty-printable list."""
     from decimal import Decimal
+
     formatted_output = []
 
     if args.average:
@@ -225,88 +229,119 @@ def format_output(output: list, args) -> list:
         # Group by (account, symbol, cost_currency) - we don't group by date for average
         from collections import defaultdict
         from decimal import Decimal
-        
+
         lots_by_group = defaultdict(list)
-        
+
         # First, group all lots by their grouping criteria
         for row in output:
-            # For detailed lots: date, account, symbol, quantity, cost, cost_currency
-            date, account, symbol, quantity, cost, cost_currency = row
-            
+            # For detailed lots: date, account, symbol, quantity, price, cost_currency
+            # Note: In average mode, we don't select the cost(position) field
+            date, account, symbol, quantity, price, cost_currency = row
+
             # Extract the number from the Amount object for quantity
-            if hasattr(quantity, 'units') and hasattr(quantity.units, 'number'):
+            if hasattr(quantity, "units") and hasattr(quantity.units, "number"):
                 # This is a Position object with units
                 quantity_number = quantity.units.number
-            elif hasattr(quantity, 'number'):
+            elif hasattr(quantity, "number"):
                 # This is already an Amount object
                 quantity_number = quantity.number
             else:
                 # Try to convert to Decimal directly
-                quantity_number = Decimal(str(quantity)) if quantity else Decimal('0')
-            
-            # Extract the cost number
-            cost_decimal = Decimal(str(cost)) if cost else Decimal('0')
-            
+                quantity_number = Decimal(str(quantity)) if quantity else Decimal("0")
+
+            # Extract the price number
+            price_decimal = Decimal(str(price)) if price else Decimal("0")
+
             # Grouping key - group by account, symbol, and cost_currency
             group_key = (account, symbol, cost_currency)
-            
+
             # Store the lot data
-            lots_by_group[group_key].append({
-                'date': date,
-                'quantity': quantity_number,
-                'cost': cost_decimal
-            })
-        
-        # Now calculate average cost for each group
+            lots_by_group[group_key].append(
+                {"date": date, "quantity": quantity_number, "price": price_decimal}
+            )
+
+        # Now calculate average price for each group
         for group_key, lots in lots_by_group.items():
             account, symbol, cost_currency = group_key
-            
+
             # For average, we use the earliest date in the group
-            date = min(lot['date'] for lot in lots)
-            
+            date = min(lot["date"] for lot in lots)
+
             # Calculate total quantity and total cost
-            total_quantity = Decimal('0')
-            total_cost = Decimal('0')
-            
+            total_quantity = Decimal("0")
+            total_cost = Decimal("0")
+
             for lot in lots:
-                quantity = lot['quantity']
-                cost = lot['cost']
+                quantity = lot["quantity"]
+                price = lot["price"]
                 total_quantity += quantity
-                total_cost += quantity * cost  # Quantity * cost per unit = total cost for this lot
-            
-            # Calculate average cost
-            if total_quantity and total_quantity != Decimal('0'):
-                avg_cost = total_cost / total_quantity
+                total_cost += (
+                    quantity * price
+                )  # Quantity * price per unit = total cost for this lot
+
+            # Calculate average price
+            if total_quantity and total_quantity != Decimal("0"):
+                avg_price = total_cost / total_quantity
             else:
-                avg_cost = Decimal('0')
-            
+                avg_price = Decimal("0")
+
             # Format the output
             formatted_quantity = "{:,.2f}".format(total_quantity)
-            formatted_avg_cost = "{:,.2f} {}".format(avg_cost, cost_currency)
+            formatted_avg_price = "{:,.2f} {}".format(avg_price, cost_currency)
             formatted_total_cost = "{:,.2f} {}".format(total_cost, cost_currency)
-            
-            formatted_output.append([str(date), account, formatted_quantity, symbol, formatted_avg_cost, formatted_total_cost])
+
+            formatted_output.append(
+                [
+                    str(date),
+                    account,
+                    formatted_quantity,
+                    symbol,
+                    formatted_avg_price,
+                    formatted_total_cost,
+                ]
+            )
     else:
         # For detailed lots
         for row in output:
-            # For detailed lots: date, account, symbol, quantity, cost, cost_currency
-            date, account, symbol, quantity, cost, cost_currency = row
-            
+            # For detailed lots: date, account, symbol, quantity, price, cost
+            date, account, symbol, quantity, price, cost = row
+
             # Extract the number from the Amount object for quantity
-            if hasattr(quantity, 'units') and hasattr(quantity.units, 'number'):
+            if hasattr(quantity, "units") and hasattr(quantity.units, "number"):
                 # This is a Position object with units
                 quantity_number = quantity.units.number
-            elif hasattr(quantity, 'number'):
+            elif hasattr(quantity, "number"):
                 # This is already an Amount object
                 quantity_number = quantity.number
             else:
                 # Try to convert to Decimal directly
-                quantity_number = Decimal(str(quantity)) if quantity else Decimal('0')
-            
-            cost_decimal = Decimal(str(cost)) if cost else Decimal('0')
-            
-            formatted_quantity = "{:,}".format(int(quantity_number))  # Show as integer since that's how it's displayed in the actual output
-            formatted_cost = "{:,.2f} {}".format(cost_decimal, cost_currency)
-            formatted_output.append([str(date), account, formatted_quantity, symbol, formatted_cost])
+                quantity_number = Decimal(str(quantity)) if quantity else Decimal("0")
+
+            price_decimal = Decimal(str(price)) if price else Decimal("0")
+
+            # Format the cost
+            # cost is already a Beancount Amount object with number and currency
+            cost_str = ""
+            if hasattr(cost, "number") and hasattr(cost, "currency"):
+                cost_number = cost.number
+                cost_currency = cost.currency
+                cost_str = f"{cost_number} {cost_currency}"
+
+            formatted_quantity = "{:,}".format(
+                int(quantity_number)
+            )  # Show as integer since that's how it's displayed in the actual output
+            formatted_price = "{:,.2f} {}".format(
+                price_decimal, cost.currency if hasattr(cost, "currency") else ""
+            )
+            formatted_output.append(
+                [
+                    str(date),
+                    account,
+                    formatted_quantity,
+                    symbol,
+                    formatted_price,
+                    cost_str,
+                ]
+            )
 
     return formatted_output

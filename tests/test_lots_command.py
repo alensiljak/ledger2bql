@@ -11,7 +11,10 @@ def test_lots_no_args():
 
     # Assert
     assert result.exit_code == 0
-    assert "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as cost" in result.output
+    assert (
+        "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as price, cost(position) as cost"
+        in result.output
+    )
     assert "cost_number IS NOT NULL" in result.output
 
     # Check that the output contains the expected lots from sample_ledger.bean
@@ -24,11 +27,14 @@ def test_lots_no_args():
     assert "ABC" in table_output  # The symbol is ABC, not EUR
     assert "5" in table_output  # First lot (shown as integer)
     assert "7" in table_output  # Second lot (shown as integer)
-    assert "1.25" in table_output  # First cost
-    assert "1.30" in table_output  # Second cost
-    # Check that costs are displayed with the cost currency (EUR)
+    assert "1.25" in table_output  # First price
+    assert "1.30" in table_output  # Second price
+    # Check that prices are displayed with the cost currency (EUR)
     assert "1.25 EUR" in table_output
     assert "1.30 EUR" in table_output
+    # Check that costs are displayed with quantity and currency
+    assert "6.25 EUR" in table_output  # 5 * 1.25 = 6.25
+    assert "9.10 EUR" in table_output  # 7 * 1.30 = 9.10
 
 
 def test_lots_filter_by_account():
@@ -49,25 +55,28 @@ def test_lots_filter_by_account():
 def test_lots_average():
     # Act
     result = run_lots_command(["--average"])
-    
+
     # Print the result for debugging
     print("Exit code:", result.exit_code)
     print("Output:", result.output)
 
     # Assert
     assert result.exit_code == 0
-    assert "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as cost, cost_currency" in result.output
-    
+    assert (
+        "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as price, cost_currency"
+        in result.output
+    )
+
     table_lines = extract_table_data(result.output.splitlines())
     table_output = "\n".join(table_lines)
 
-    # Should show average costs
+    # Should show average prices
     assert "Equity:Stocks" in table_output
     assert "ABC" in table_output
-    # Average cost should be (5*1.25 + 7*1.30) / (5+7) = (6.25 + 9.1) / 12 = 15.35 / 12 = 1.279...
-    # So we should see 12 quantity and around 1.28 cost
+    # Average price should be (5*1.25 + 7*1.30) / (5+7) = (6.25 + 9.1) / 12 = 15.35 / 12 = 1.279...
+    # So we should see 12 quantity and around 1.28 price
     assert "12" in table_output  # Total quantity
-    assert "1.28 EUR" in table_output  # Average cost
+    assert "1.28 EUR" in table_output  # Average price
     assert "15.35 EUR" in table_output  # Total cost
 
 
@@ -86,7 +95,7 @@ def test_lots_sort_by_price():
 
     # Assert
     assert result.exit_code == 0
-    assert "ORDER BY cost_number ASC" in result.output
+    assert "ORDER BY price ASC" in result.output
 
 
 def test_lots_sort_by_symbol():
