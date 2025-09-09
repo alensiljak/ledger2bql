@@ -29,6 +29,14 @@ def run_reg_command(args=None):
     return runner.invoke(cli, ["reg"] + args)
 
 
+def run_lots_command(args=None):
+    """Run the lots command with given arguments."""
+    runner = CliRunner()
+    if args is None:
+        args = []
+    return runner.invoke(cli, ["lots"] + args)
+
+
 def extract_table_data(output_lines):
     """Extract table data from output lines."""
     table_data = []
@@ -42,6 +50,7 @@ def extract_table_data(output_lines):
             else:
                 end_index = i
                 break
+
 
     if start_index != -1 and end_index != -1:
         # The actual data starts after the header and separator lines

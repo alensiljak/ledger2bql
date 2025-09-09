@@ -22,7 +22,7 @@ Repository = 'https://github.com/alensiljak/ledger2bql'
 
 [dependency-groups]
 dev = [
-    "pytest>=8.3.5",
+    "pytest>=8.4.2",
 ]
 
 [tool.pytest.ini_options]
