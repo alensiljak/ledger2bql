@@ -2,7 +2,6 @@
 Tests for the Lots command.
 """
 
-import pytest
 from tests.test_utils import run_lots_command, extract_table_data
 
 
@@ -47,14 +46,17 @@ def test_lots_filter_by_account():
     assert "Assets:Bank:Checking" not in table_output  # This is not an Equity account
 
 
-@pytest.mark.skip(reason="avg() function not working with decimal types in BQL")
 def test_lots_average():
     # Act
     result = run_lots_command(["--average"])
+    
+    # Print the result for debugging
+    print("Exit code:", result.exit_code)
+    print("Output:", result.output)
 
     # Assert
     assert result.exit_code == 0
-    assert "SELECT date, account, currency(units(position)) as symbol, sum(units(position)) as quantity, avg(cost_number) as avg_cost" in result.output
+    assert "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as cost, cost_currency" in result.output
     
     table_lines = extract_table_data(result.output.splitlines())
     table_output = "\n".join(table_lines)
@@ -63,8 +65,10 @@ def test_lots_average():
     assert "Equity:Stocks" in table_output
     assert "ABC" in table_output
     # Average cost should be (5*1.25 + 7*1.30) / (5+7) = (6.25 + 9.1) / 12 = 15.35 / 12 = 1.279...
-    # So we should see 12.00 quantity and around 1.28 cost
-    assert "12.00" in table_output
+    # So we should see 12 quantity and around 1.28 cost
+    assert "12" in table_output  # Total quantity
+    assert "1.28 EUR" in table_output  # Average cost
+    assert "15.35 EUR" in table_output  # Total cost
 
 
 def test_lots_sort_by_date():
