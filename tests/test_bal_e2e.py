@@ -47,12 +47,12 @@ def test_bal_default_sort_by_account():
 
     # Expected order based on sample_ledger.bean and alphabetical sort
     expected_table_output_lines = [
-        "| Assets:Bank:Checking     |         1,359.65 EUR |",
+        "| Assets:Bank:Checking     |         1,369.80 EUR |",
         "| Assets:Cash:BAM          |           -25.00 BAM |",
         "| Assets:Cash:Pocket-Money |           -45.00 EUR |",  # Updated to reflect new transaction
         "| Assets:Cash:USD          |            -7.00 USD |",
         "| Equity:Opening-Balances  |        -1,000.00 EUR |",
-        "| Equity:Stocks            |            12.00 ABC |",
+        "| Equity:Stocks            |             4.00 ABC |",
         "| Expenses:Accommodation   |            25.00 EUR |",  # Added new transaction
         "| Expenses:Food            | 100.00 EUR 25.00 BAM |",
         "| Expenses:Sweets          |            20.00 EUR |",
@@ -81,7 +81,7 @@ def test_bal_sort_by_balance():
         "-7.00 USD",  # Assets:Cash:USD
         "7.00 USD",  # Expenses:Transport
         "-25.00 BAM",  # Assets:Cash:BAM
-        "12.00 ABC",  # Equity:Stocks
+        "4.00 ABC",  # Equity:Stocks
         "-1,000.00 EUR",  # Equity:Opening-Balances
         "-1,000.00 EUR",  # Income:Salary
         "-45.00 EUR",  # Assets:Cash:Pocket-Money
@@ -91,7 +91,7 @@ def test_bal_sort_by_balance():
         "25.00 EUR",  # Expenses:Accommodation
         "100.00 EUR",  # Expenses:Food (partially)
         "500.00 EUR",  # Assets:Bank:Savings
-        "1,359.65 EUR",  # Assets:Bank:Checking
+        "1,369.80 EUR",  # Assets:Bank:Checking
         "-3,000.00 CHF",  # Income:Other
         "3,000.00 CHF",  # Assets:Bank:Bank03581
     ]
@@ -172,7 +172,7 @@ def test_bal_units():
     table_lines = extract_table_data(result.output.splitlines())
     table_output = "\n".join(table_lines)
 
-    assert "| Equity:Stocks | 12.00 ABC |" in table_output
+    assert "| Equity:Stocks |  4.00 ABC |" in table_output
 
 
 def test_bal_filter_by_payee_and_date():

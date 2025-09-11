@@ -73,11 +73,11 @@ def test_lots_average():
     # Should show average prices
     assert "Equity:Stocks" in table_output
     assert "ABC" in table_output
-    # Average price should be (5*1.25 + 7*1.30) / (5+7) = (6.25 + 9.1) / 12 = 15.35 / 12 = 1.279...
-    # So we should see 12 quantity and around 1.28 price
-    assert "12" in table_output  # Total quantity
-    assert "1.28 EUR" in table_output  # Average price
-    assert "15.35 EUR" in table_output  # Total cost
+    # After selling, we have 4 ABC stocks at 1.30 EUR each
+    # So we should see 4 quantity and 1.30 price
+    assert "4" in table_output  # Total quantity
+    assert "1.30 EUR" in table_output  # Average price (same as remaining lot)
+    assert "5.20 EUR" in table_output  # Total cost (4 * 1.30)
 
 
 def test_lots_sort_by_date():

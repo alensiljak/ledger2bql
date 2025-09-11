@@ -23,7 +23,7 @@ def test_bal_currency_filter_eur():
     table_output = "\n".join(table_lines)
 
     # Should show accounts with EUR currency
-    assert "| Assets:Bank:Checking     |  1,359.65 EUR |" in table_output
+    assert "| Assets:Bank:Checking     |  1,369.80 EUR |" in table_output
     assert (
         "| Assets:Cash:Pocket-Money |    -45.00 EUR |" in table_output
     )  # Updated to reflect new transaction
@@ -83,7 +83,7 @@ def test_bal_currency_filter_abc():
     table_output = "\n".join(table_lines)
 
     # Should show accounts with ABC currency
-    assert "| Equity:Stocks | 12.00 ABC |" in table_output
+    assert "| Equity:Stocks |  4.00 ABC |" in table_output
 
     # Should not show accounts with other currencies
     assert "| Assets:Bank:Checking     |  1,884.65 EUR |" not in table_output
@@ -150,7 +150,7 @@ def test_bal_multiple_currency_filter():
     table_output = "\n".join(table_lines)
 
     # Should show accounts with EUR currency
-    assert "| Assets:Bank:Checking     |         1,359.65 EUR |" in table_output
+    assert "| Assets:Bank:Checking     |         1,369.80 EUR |" in table_output
     assert (
         "| Assets:Cash:Pocket-Money |           -45.00 EUR |" in table_output
     )  # Updated to reflect new transaction

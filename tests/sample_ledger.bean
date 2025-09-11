@@ -52,11 +52,11 @@ plugin "beancount.plugins.implicit_prices"
 
 2025-04-01 txn "Buy Stocks"
   Equity:Stocks 5 ABC { 1.25 EUR }
-  Assets:Bank:Checking 
+  Assets:Bank:Checking
 
 2025-04-02 txn "Buy more stocks"
   Equity:Stocks 7 ABC { 1.30 EUR }
-  Assets:Bank:Checking 
+  Assets:Bank:Checking
 
 2025-05-01 txn "Supermarket" "piće"
   Expenses:Food 25 BAM
@@ -87,4 +87,11 @@ plugin "beancount.plugins.implicit_prices"
   Assets:Cash:Pocket-Money
 
 2025-09-02 query "holidays" "select * where payee ~ 'holiday' and account ~ 'expenses'"
- 
+
+2025-09-09 txn "Sell complete lot"
+  Equity:Stocks -5 ABC { 1.25 EUR, 2025-04-01 } @ 1.35 EUR
+  Assets:Bank:Checking
+
+2025-09-10 txn "Sell some stock" "split lot"
+  Equity:Stocks -3 ABC { 1.30 EUR, 2025-04-02 } @ 1.35 EUR
+  Assets:Bank:Checking

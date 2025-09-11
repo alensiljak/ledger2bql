@@ -43,7 +43,10 @@ def test_bal_with_hierarchy_and_total_no_double_counting():
     assert total_row_regular is not None, "Total row not found in regular output"
 
     # Assert that the total values are the same (no double-counting)
-    assert total_row_hierarchical == total_row_regular, (
+    # Remove any leading/trailing whitespace and normalize spaces for comparison
+    hierarchical_normalized = ' '.join(total_row_hierarchical.split())
+    regular_normalized = ' '.join(total_row_regular.split())
+    assert hierarchical_normalized == regular_normalized, (
         f"Total values don't match. Hierarchical: {total_row_hierarchical}, "
         f"Regular: {total_row_regular}. This indicates double-counting in hierarchical view."
     )

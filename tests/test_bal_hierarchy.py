@@ -125,7 +125,7 @@ def test_bal_with_collapse_level_2():
 
     # Check that the accounts are collapsed to level 2
     assert (
-        "| Assets:Bank             |       3,000.00 CHF 1,859.65 EUR |" in table_output
+        "| Assets:Bank             |       3,000.00 CHF 1,869.80 EUR |" in table_output
     )
     assert (
         "| Assets:Cash             | -25.00 BAM -45.00 EUR -7.00 USD |" in table_output
@@ -134,7 +134,7 @@ def test_bal_with_collapse_level_2():
         "| Equity:Opening-Balances |                   -1,000.00 EUR |" in table_output
     )
     assert (
-        "| Equity:Stocks           |                       12.00 ABC |" in table_output
+        "| Equity:Stocks           |                        4.00 ABC |" in table_output
     )
     assert (
         "| Expenses:Accommodation  |                       25.00 EUR |"
@@ -172,10 +172,10 @@ def test_bal_with_collapse_level_1():
 
     # Check that the accounts are collapsed to level 1
     assert (
-        "| Assets    | 3,000.00 CHF 1,814.65 EUR -25.00 BAM -7.00 USD |" in table_output
+        "| Assets    | 3,000.00 CHF 1,824.80 EUR -25.00 BAM -7.00 USD |" in table_output
     )  # Updated total (1839.65 - 25 = 1814.65)
     assert (
-        "| Equity    |                        -1,000.00 EUR 12.00 ABC |" in table_output
+        "| Equity    |                         -1,000.00 EUR 4.00 ABC |" in table_output
     )
     assert (
         "| Expenses  |                  170.00 EUR 25.00 BAM 7.00 USD |" in table_output
