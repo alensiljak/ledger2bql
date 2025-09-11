@@ -8,8 +8,9 @@ from .date_parser import parse_date, parse_date_range
 from .utils import (
     add_common_click_arguments,
     execute_bql_command_with_click,
-    parse_amount_filter,
+    parse_account_params,
     parse_account_pattern,
+    parse_amount_filter,
 )
 
 
@@ -64,32 +65,12 @@ def parse_query(args):
     """Parse Ledger query into BQL"""
     where_clauses = []
     group_by_clauses = []
-    account_regexes = []
-    excluded_account_regexes = []
 
-    # Handle common arguments
-    if args.account_regex:
-        i = 0
-        while i < len(args.account_regex):
-            regex = args.account_regex[i]
-            if regex == "not":
-                # The next argument(s) should be excluded
-                i += 1
-                while i < len(args.account_regex):
-                    next_regex = args.account_regex[i]
-                    if next_regex.startswith("@") or next_regex == "not":
-                        # If we encounter another @ pattern or 'not', stop excluding
-                        i -= 1  # Step back to process this in the next iteration
-                        break
-                    else:
-                        excluded_account_regexes.append(next_regex)
-                        i += 1
-            elif regex.startswith("@"):
-                payee = regex[1:]
-                where_clauses.append(f"description ~ '{payee}'")
-            else:
-                account_regexes.append(regex)
-            i += 1
+    # Handle account regular expressions and payee filters
+    account_regexes, excluded_account_regexes, payee_where_clauses = (
+        parse_account_params(args.account_regex)
+    )
+    where_clauses.extend(payee_where_clauses)
 
     if account_regexes:
         for pattern in account_regexes:

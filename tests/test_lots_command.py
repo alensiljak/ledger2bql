@@ -145,7 +145,9 @@ def test_lots_active():
         in result.output
     )
     assert "cost_number IS NOT NULL" in result.output
-    assert "HAVING SUM(number(units(position))) > 0" in result.output  # Should filter for active
+    assert (
+        "HAVING SUM(number(units(position))) > 0" in result.output
+    )  # Should filter for active
 
     # Check that the output contains only active lots
     table_lines = extract_table_data(result.output.splitlines())

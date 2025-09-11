@@ -55,6 +55,47 @@ def parse_account_pattern(pattern):
         return pattern
 
 
+def parse_account_params(account_regex):
+    """
+    Parse account regex arguments into positive and negative patterns.
+
+    Returns a tuple of (account_regexes, excluded_account_regexes, where_clauses)
+    where:
+    - account_regexes: List of positive account regex patterns
+    - excluded_account_regexes: List of negative account regex patterns
+    - where_clauses: List of where clauses for payee filters (@ patterns)
+    """
+    account_regexes = []
+    excluded_account_regexes = []
+    where_clauses = []
+
+    # Handle account regular expressions and payee filters
+    if account_regex:
+        i = 0
+        while i < len(account_regex):
+            regex = account_regex[i]
+            if regex == "not":
+                # The next argument(s) should be excluded
+                i += 1
+                while i < len(account_regex):
+                    next_regex = account_regex[i]
+                    if next_regex.startswith("@") or next_regex == "not":
+                        # If we encounter another @ pattern or 'not', stop excluding
+                        i -= 1  # Step back to process this in the next iteration
+                        break
+                    else:
+                        excluded_account_regexes.append(next_regex)
+                        i += 1
+            elif regex.startswith("@"):
+                payee = regex[1:]
+                where_clauses.append(f"description ~ '{payee}'")
+            else:
+                account_regexes.append(regex)
+            i += 1
+
+    return account_regexes, excluded_account_regexes, where_clauses
+
+
 def add_common_arguments(parser):
     """Add common arguments to an argparse parser."""
     parser.add_argument(

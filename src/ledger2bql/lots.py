@@ -9,8 +9,9 @@ from .date_parser import parse_date, parse_date_range
 from .utils import (
     add_common_click_arguments,
     execute_bql_command_with_click,
-    parse_amount_filter,
+    parse_account_params,
     parse_account_pattern,
+    parse_amount_filter,
 )
 
 
@@ -82,32 +83,12 @@ def parse_query(args):
     """Parse Ledger query into BQL"""
     where_clauses = []
     group_by_clauses = []
-    account_regexes = []
-    excluded_account_regexes = []
 
     # Handle account regular expressions and payee filters
-    if args.account_regex:
-        i = 0
-        while i < len(args.account_regex):
-            regex = args.account_regex[i]
-            if regex == "not":
-                # The next argument(s) should be excluded
-                i += 1
-                while i < len(args.account_regex):
-                    next_regex = args.account_regex[i]
-                    if next_regex.startswith("@") or next_regex == "not":
-                        # If we encounter another @ pattern or 'not', stop excluding
-                        i -= 1  # Step back to process this in the next iteration
-                        break
-                    else:
-                        excluded_account_regexes.append(next_regex)
-                        i += 1
-            elif regex.startswith("@"):
-                payee = regex[1:]
-                where_clauses.append(f"description ~ '{payee}'")
-            else:
-                account_regexes.append(regex)
-            i += 1
+    account_regexes, excluded_account_regexes, payee_where_clauses = (
+        parse_account_params(args.account_regex)
+    )
+    where_clauses.extend(payee_where_clauses)
 
     if account_regexes:
         for pattern in account_regexes:
@@ -160,9 +141,9 @@ def parse_query(args):
         where_clauses.append(
             "cost_number IS NOT NULL"
         )  # Only positions with cost basis
-        
+
         query = select_clause
-        
+
         # Add GROUP BY for average cost calculation
         group_by_clauses = ["account", "currency(units(position))"]
     else:
@@ -181,8 +162,13 @@ def parse_query(args):
                 "cost_number IS NOT NULL"
             )  # Only positions with cost basis
             # Group by lot identifiers
-            group_by_clauses = ["account", "currency(units(position))", "cost_number", "cost_currency"]
-        
+            group_by_clauses = [
+                "account",
+                "currency(units(position))",
+                "cost_number",
+                "cost_currency",
+            ]
+
         query = select_clause
 
     if where_clauses:
@@ -190,7 +176,7 @@ def parse_query(args):
 
     if group_by_clauses:
         query += " GROUP BY " + ", ".join(group_by_clauses)
-        
+
         # Filter for active lots if not showing all
         if not args.show_all:
             query += " HAVING SUM(number(units(position))) > 0"
@@ -276,11 +262,15 @@ def format_output(output: list, args) -> list:
                 quantity_number = quantity.number
             else:
                 # Try to convert to Decimal directly
-                quantity_number = Decimal(str(quantity)) if quantity is not None else Decimal("0")
+                quantity_number = (
+                    Decimal(str(quantity)) if quantity is not None else Decimal("0")
+                )
 
             # Extract the average price
-            avg_price_decimal = Decimal(str(avg_price)) if avg_price is not None else Decimal("0")
-            
+            avg_price_decimal = (
+                Decimal(str(avg_price)) if avg_price is not None else Decimal("0")
+            )
+
             # Extract the total cost
             total_cost_decimal = Decimal("0")
             cost_currency = symbol  # Default to symbol as currency
@@ -290,7 +280,9 @@ def format_output(output: list, args) -> list:
                 if positions:
                     pos = positions[0]
                     total_cost_decimal = pos.units.number
-                    cost_currency = pos.units.currency  # Update cost_currency from the actual cost object
+                    cost_currency = (
+                        pos.units.currency
+                    )  # Update cost_currency from the actual cost object
             elif hasattr(total_cost, "number"):
                 # This is already an Amount object
                 total_cost_decimal = total_cost.number
@@ -298,13 +290,13 @@ def format_output(output: list, args) -> list:
                     cost_currency = total_cost.currency
             elif total_cost is not None:
                 # Try to convert to Decimal directly
-                total_cost_decimal = Decimal(str(total_cost)) if total_cost is not None else Decimal("0")
+                total_cost_decimal = (
+                    Decimal(str(total_cost)) if total_cost is not None else Decimal("0")
+                )
 
             # Format the output
             formatted_quantity = "{:,.2f}".format(quantity_number)
-            formatted_avg_price = "{:,.2f} {}".format(
-                avg_price_decimal, cost_currency
-            )
+            formatted_avg_price = "{:,.2f} {}".format(avg_price_decimal, cost_currency)
             formatted_total_cost = "{:,.2f} {}".format(
                 total_cost_decimal, cost_currency
             )
@@ -331,15 +323,14 @@ def format_output(output: list, args) -> list:
                 # Position object with units
                 value_number = value.units.number
                 value_currency = value.units.currency
-                value_str = "{:,.2f} {}".format(
-                    value_number, value_currency
-                )
+                value_str = "{:,.2f} {}".format(value_number, value_currency)
             elif value is not None:
                 # Try to convert to string directly and format properly
                 value_str = str(value)
                 # If it's in the format "(16.20 EUR)", extract the number and currency
                 import re
-                match = re.match(r'$(\d+\.?\d*)\s+([A-Z]{3})$', value_str)
+
+                match = re.match(r"$(\d+\.?\d*)\s+([A-Z]{3})$", value_str)
                 if match:
                     value_str = "{} {}".format(match.group(1), match.group(2))
 
@@ -396,7 +387,11 @@ def format_output(output: list, args) -> list:
                 cost_number = cost.number
                 cost_currency = cost.currency
                 cost_str = f"{cost_number} {cost_currency}"
-            elif hasattr(cost, "units") and hasattr(cost.units, "number") and hasattr(cost.units, "currency"):
+            elif (
+                hasattr(cost, "units")
+                and hasattr(cost.units, "number")
+                and hasattr(cost.units, "currency")
+            ):
                 # Position object with units
                 cost_number = cost.units.number
                 cost_currency = cost.units.currency
@@ -419,7 +414,11 @@ def format_output(output: list, args) -> list:
                 value_number = value.number
                 value_currency = value.currency
                 value_str = "{:,.2f} {}".format(value_number, value_currency)
-            elif hasattr(value, "units") and hasattr(value.units, "number") and hasattr(value.units, "currency"):
+            elif (
+                hasattr(value, "units")
+                and hasattr(value.units, "number")
+                and hasattr(value.units, "currency")
+            ):
                 # Position object with units
                 value_number = value.units.number
                 value_currency = value.units.currency
@@ -428,13 +427,16 @@ def format_output(output: list, args) -> list:
                 value_str = str(value)
 
             formatted_quantity = "{:,}".format(
-                int(quantity_number) if quantity_number == int(quantity_number) else quantity_number
+                int(quantity_number)
+                if quantity_number == int(quantity_number)
+                else quantity_number
             )  # Show as integer if whole number
             formatted_price = "{:,.2f} {}".format(
-                price_decimal, 
+                price_decimal,
                 # Extract currency from cost if available
-                cost.currency if hasattr(cost, "currency") else 
-                (cost_currency if 'cost_currency' in locals() else "")
+                cost.currency
+                if hasattr(cost, "currency")
+                else (cost_currency if "cost_currency" in locals() else ""),
             )
             formatted_output.append(
                 [
