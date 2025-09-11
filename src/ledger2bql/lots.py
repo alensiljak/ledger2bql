@@ -27,21 +27,34 @@ from .utils import (
     is_flag=True,
     help="Show average cost for each symbol.",
 )
+@click.option(
+    "--active",
+    is_flag=True,
+    help="Show only active/open lots (default).",
+)
+@click.option(
+    "--all",
+    "show_all",
+    is_flag=True,
+    help="Show all lots, including sold ones.",
+)
 @click.argument("account_regex", nargs=-1)
 @add_common_click_arguments
-def lots_command(account_regex, sort_by, average, **kwargs):
+def lots_command(account_regex, sort_by, average, active, show_all, **kwargs):
     """Translate ledger-cli lots command arguments to a Beanquery (BQL) query."""
 
     # Package arguments in a way compatible with the existing code
     class Args:
-        def __init__(self, account_regex, sort_by, average, **kwargs):
+        def __init__(self, account_regex, sort_by, average, active, show_all, **kwargs):
             self.account_regex = account_regex
             self.sort_by = sort_by
             self.average = average
+            self.active = active
+            self.show_all = show_all
             for key, value in kwargs.items():
                 setattr(self, key, value)
 
-    args = Args(account_regex, sort_by, average, **kwargs)
+    args = Args(account_regex, sort_by, average, active, show_all, **kwargs)
 
     # Determine headers for the table
     if average:
@@ -147,23 +160,33 @@ def parse_query(args):
         where_clauses.append(
             "cost_number IS NOT NULL"
         )  # Only positions with cost basis
+        
         query = select_clause
         
         # Add GROUP BY for average cost calculation
         group_by_clauses = ["account", "currency(units(position))"]
     else:
         # For detailed lots, we need to show individual lots
-        select_clause = "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as price, cost(position) as cost, value(position) as value"
+        # Group by account, symbol, and cost to identify unique lots
+        select_clause = "SELECT MAX(date) as date, account, currency(units(position)) as symbol, SUM(units(position)) as quantity, cost_number as price, cost(SUM(position)) as cost, value(SUM(position)) as value"
         where_clauses.append(
             "cost_number IS NOT NULL"
         )  # Only positions with cost basis
+        
+        # Group by lot identifiers
+        group_by_clauses = ["account", "currency(units(position))", "cost_number", "cost_currency"]
+        
         query = select_clause
 
     if where_clauses:
         query += " WHERE " + " AND ".join(where_clauses)
 
-    if args.average and group_by_clauses:
+    if group_by_clauses:
         query += " GROUP BY " + ", ".join(group_by_clauses)
+        
+        # Filter for active lots if requested (or by default if not showing all)
+        if args.active or (not hasattr(args, 'show_all') or not args.show_all):
+            query += " HAVING SUM(number(units(position))) > 0"
 
     # Handle sorting
     if args.average:
@@ -192,10 +215,7 @@ def parse_query(args):
             # Default sorting by date
             query += " ORDER BY date ASC"
     else:
-        if group_by_clauses:
-            query += " GROUP BY " + ", ".join(group_by_clauses)
-
-        # Handle sorting
+        # Handle sorting for detailed lots
         if hasattr(args, "sort") and args.sort:
             sort_fields = []
             for field in args.sort.split(","):
@@ -334,22 +354,42 @@ def format_output(output: list, args) -> list:
             date, account, symbol, quantity, price, cost, value = row
 
             # Extract the number from the Amount object for quantity
-            if hasattr(quantity, "units") and hasattr(quantity.units, "number"):
+            quantity_number = Decimal("0")
+            if hasattr(quantity, "get_positions"):
+                # This is an Inventory object - extract the net quantity
+                positions = quantity.get_positions()
+                if positions:
+                    # Sum all position units to get the net quantity
+                    total_number = Decimal("0")
+                    for pos in positions:
+                        total_number += pos.units.number
+                    quantity_number = total_number
+            elif hasattr(quantity, "units") and hasattr(quantity.units, "number"):
                 # This is a Position object with units
                 quantity_number = quantity.units.number
             elif hasattr(quantity, "number"):
                 # This is already an Amount object
                 quantity_number = quantity.number
-            else:
+            elif quantity is not None:
                 # Try to convert to Decimal directly
-                quantity_number = Decimal(str(quantity)) if quantity else Decimal("0")
+                quantity_number = Decimal(str(quantity))
 
-            price_decimal = Decimal(str(price)) if price else Decimal("0")
+            price_decimal = Decimal("0")
+            if price is not None:
+                price_decimal = Decimal(str(price))
 
             # Format the cost
             # cost is already a Beancount Amount object with number and currency
             cost_str = ""
-            if hasattr(cost, "number") and hasattr(cost, "currency"):
+            if hasattr(cost, "get_positions"):
+                # This is an Inventory object - extract the cost
+                positions = cost.get_positions()
+                if positions:
+                    pos = positions[0]
+                    cost_number = pos.units.number
+                    cost_currency = pos.units.currency
+                    cost_str = f"{cost_number} {cost_currency}"
+            elif hasattr(cost, "number") and hasattr(cost, "currency"):
                 cost_number = cost.number
                 cost_currency = cost.currency
                 cost_str = f"{cost_number} {cost_currency}"
@@ -357,7 +397,15 @@ def format_output(output: list, args) -> list:
             # Format the value
             # value is already a Beancount Amount object with number and currency
             value_str = ""
-            if hasattr(value, "number") and hasattr(value, "currency"):
+            if hasattr(value, "get_positions"):
+                # This is an Inventory object - extract the value
+                positions = value.get_positions()
+                if positions:
+                    pos = positions[0]
+                    value_number = pos.units.number
+                    value_currency = pos.units.currency
+                    value_str = "{:,.2f} {}".format(value_number, value_currency)
+            elif hasattr(value, "number") and hasattr(value, "currency"):
                 value_number = value.number
                 value_currency = value.currency
                 value_str = "{:,.2f} {}".format(value_number, value_currency)
@@ -366,7 +414,10 @@ def format_output(output: list, args) -> list:
                 int(quantity_number)
             )  # Show as integer since that's how it's displayed in the actual output
             formatted_price = "{:,.2f} {}".format(
-                price_decimal, cost.currency if hasattr(cost, "currency") else ""
+                price_decimal, 
+                # Extract currency from cost if available
+                cost.currency if hasattr(cost, "currency") else 
+                (cost_currency if 'cost_currency' in locals() else "")
             )
             formatted_output.append(
                 [

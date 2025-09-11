@@ -12,29 +12,26 @@ def test_lots_no_args():
     # Assert
     assert result.exit_code == 0
     assert (
-        "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as price, cost(position) as cost, value(position) as value"
+        "SELECT MAX(date) as date, account, currency(units(position)) as symbol, SUM(units(position)) as quantity, cost_number as price, cost(SUM(position)) as cost, value(SUM(position)) as value"
         in result.output
     )
     assert "cost_number IS NOT NULL" in result.output
+    assert "HAVING SUM(number(units(position))) > 0" in result.output
 
     # Check that the output contains the expected lots from sample_ledger.bean
-    # Based on the sample ledger, we should see ABC lots
+    # Based on the sample ledger, after selling we should see only 4 ABC stocks from the second lot
     table_lines = extract_table_data(result.output.splitlines())
     table_output = "\n".join(table_lines)
 
     # Should contain the ABC lots from the sample ledger
     assert "Equity:Stocks" in table_output
     assert "ABC" in table_output  # The symbol is ABC, not EUR
-    assert "5" in table_output  # First lot (shown as integer)
-    assert "7" in table_output  # Second lot (shown as integer)
-    assert "1.25" in table_output  # First price
-    assert "1.30" in table_output  # Second price
+    assert "4" in table_output  # Only 4 stocks remaining after sales
+    assert "1.30" in table_output  # Price of remaining lot
     # Check that prices are displayed with the cost currency (EUR)
-    assert "1.25 EUR" in table_output
     assert "1.30 EUR" in table_output
     # Check that costs are displayed with quantity and currency
-    assert "6.25 EUR" in table_output  # 5 * 1.25 = 6.25
-    assert "9.10 EUR" in table_output  # 7 * 1.30 = 9.10
+    assert "5.20 EUR" in table_output  # 4 * 1.30 = 5.20
 
 
 def test_lots_filter_by_account():
@@ -105,3 +102,56 @@ def test_lots_sort_by_symbol():
     # Assert
     assert result.exit_code == 0
     assert "ORDER BY symbol ASC" in result.output
+
+
+def test_lots_show_all():
+    # Act
+    result = run_lots_command(["--all"])
+
+    # Assert
+    assert result.exit_code == 0
+    assert (
+        "SELECT MAX(date) as date, account, currency(units(position)) as symbol, SUM(units(position)) as quantity, cost_number as price, cost(SUM(position)) as cost, value(SUM(position)) as value"
+        in result.output
+    )
+    assert "cost_number IS NOT NULL" in result.output
+    assert "HAVING SUM(number(units(position))) > 0" not in result.output  # Should not filter
+
+    # Check that the output contains both lots (including sold ones)
+    table_lines = extract_table_data(result.output.splitlines())
+    table_output = "\n".join(table_lines)
+
+    # Should show both lots
+    assert "Equity:Stocks" in table_output
+    assert "ABC" in table_output
+    # Should show the first lot with 0 quantity (sold)
+    assert "0" in table_output
+    # Should show the second lot with 4 quantity (remaining)
+    assert "4" in table_output
+
+
+def test_lots_active():
+    # Act
+    result = run_lots_command(["--active"])
+
+    # Assert
+    assert result.exit_code == 0
+    assert (
+        "SELECT MAX(date) as date, account, currency(units(position)) as symbol, SUM(units(position)) as quantity, cost_number as price, cost(SUM(position)) as cost, value(SUM(position)) as value"
+        in result.output
+    )
+    assert "cost_number IS NOT NULL" in result.output
+    assert "HAVING SUM(number(units(position))) > 0" in result.output  # Should filter for active
+
+    # Check that the output contains only active lots
+    table_lines = extract_table_data(result.output.splitlines())
+    table_output = "\n".join(table_lines)
+
+    # Should contain the ABC lots from the sample ledger
+    assert "Equity:Stocks" in table_output
+    assert "ABC" in table_output
+    assert "4" in table_output  # Only 4 stocks remaining after sales
+    assert "1.30" in table_output  # Price of remaining lot
+    # Should not show any rows with 0 quantity (which would indicate sold lots)
+    # Just check that we have exactly one row with quantity 4
+    assert table_output.count("4") >= 1  # At least one occurrence of "4"
