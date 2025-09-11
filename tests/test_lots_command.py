@@ -111,23 +111,27 @@ def test_lots_show_all():
     # Assert
     assert result.exit_code == 0
     assert (
-        "SELECT MAX(date) as date, account, currency(units(position)) as symbol, SUM(units(position)) as quantity, cost_number as price, cost(SUM(position)) as cost, value(SUM(position)) as value"
+        "SELECT date, account, currency(units(position)) as symbol, units(position) as quantity, cost_number as price, cost(position) as cost, value(position) as value"
         in result.output
     )
     assert "cost_number IS NOT NULL" in result.output
-    assert "HAVING SUM(number(units(position))) > 0" not in result.output  # Should not filter
+    assert "GROUP BY" not in result.output  # Should not group when showing all
 
-    # Check that the output contains both lots (including sold ones)
+    # Check that the output contains all individual lots (buys and sells)
     table_lines = extract_table_data(result.output.splitlines())
     table_output = "\n".join(table_lines)
 
-    # Should show both lots
+    # Should show all lots including buys and sells
     assert "Equity:Stocks" in table_output
     assert "ABC" in table_output
-    # Should show the first lot with 0 quantity (sold)
-    assert "0" in table_output
-    # Should show the second lot with 4 quantity (remaining)
-    assert "4" in table_output
+    # Should show the buy lots
+    assert "5" in table_output  # First buy
+    assert "7" in table_output  # Second buy
+    assert "1.25" in table_output  # First buy price
+    assert "1.30" in table_output  # Second buy price
+    # Should show the sell lots with negative quantities
+    assert "-5" in table_output  # First sell
+    assert "-3" in table_output  # Second sell
 
 
 def test_lots_active():

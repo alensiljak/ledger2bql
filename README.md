@@ -310,6 +310,29 @@ l l Equity
 l l Stocks
 ```
 
+### Active vs All Lots
+
+By default, the lots command shows only active/open lots (those with positive quantities after all transactions):
+
+```sh
+# Show only active lots (default behavior)
+l l
+```
+
+To show all individual lot transactions including both buys and sells, use the `--all` flag:
+
+```sh
+# Show all lots including buys and sells
+l l --all
+```
+
+To explicitly show only active lots, use the `--active` flag:
+
+```sh
+# Explicitly show only active lots (same as default)
+l l --active
+```
+
 # Automatic Paging
 
 By default, ledger2bql uses your system's pager (like `less` on Unix systems or `more` on Windows) to display output. This is especially useful when viewing large reports with many transactions.
