@@ -233,6 +233,10 @@ def parse_query(args):
             # Default sorting by date
             query += " ORDER BY date ASC"
 
+    # Handle limit
+    if hasattr(args, "limit") and args.limit:
+        query += f" LIMIT {args.limit}"
+
     return query
 
 
