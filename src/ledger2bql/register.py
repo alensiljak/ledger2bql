@@ -119,6 +119,10 @@ def parse_query(args):
                 sort_keys.append(key)
         query += " ORDER BY " + ", ".join(sort_keys)
 
+    # Handle limit
+    if hasattr(args, "limit") and args.limit:
+        query += f" LIMIT {args.limit}"
+
     return query
 
 

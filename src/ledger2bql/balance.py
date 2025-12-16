@@ -143,6 +143,10 @@ def parse_query(args):
                 sort_fields.append(f"{field} {sort_order}")
         query += " ORDER BY " + ", ".join(sort_fields)
 
+    # Handle limit
+    if hasattr(args, "limit") and args.limit:
+        query += f" LIMIT {args.limit}"
+
     return query
 
 
