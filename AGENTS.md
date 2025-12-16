@@ -49,3 +49,7 @@ uv run pytest
 - Tests are using `sample_ledger.bean` file as the only source of data.
 - Use `pytest` for unit tests. Do not introduce new frameworks.
 - When creating new data for tests, first consider adding it to the default journal file, instead of creating new journal files.
+
+# Tools
+
+Search for text using ripgrep (rg) tool for performance.
