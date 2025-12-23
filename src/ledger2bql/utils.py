@@ -8,13 +8,26 @@ from decimal import Decimal
 import beanquery
 from tabulate import tabulate
 import click
+from .logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 
 def get_beancount_file_path():
     """Get the path to the beancount file from environment variable."""
     beancount_file = os.getenv("BEANCOUNT_FILE")
+    logger.debug(f"BEANCOUNT_FILE from environment: {beancount_file}")
+    
     if not beancount_file:
+        logger.error("BEANCOUNT_FILE environment variable not set.")
         raise ValueError("BEANCOUNT_FILE environment variable not set.")
+    
+    # Check if file exists
+    if not os.path.exists(beancount_file):
+        logger.error(f"Beancount file not found: {beancount_file}")
+        raise FileNotFoundError(f"Beancount file not found: {beancount_file}")
+    
+    logger.debug(f"Using beancount file: {beancount_file}")
     return beancount_file
 
 
@@ -210,14 +223,23 @@ def run_bql_query(query: str, book: str) -> list:
     Run the BQL query and return results
     book: Path to beancount file.
     """
-    # Create the connection. Pre-load the beanquery data.
-    connection = beanquery.connect("beancount:" + book)
+    logger.debug(f"Running BQL query: {query}")
+    logger.debug(f"Using beancount file: {book}")
+    
+    try:
+        # Create the connection. Pre-load the beanquery data.
+        connection = beanquery.connect("beancount:" + book)
 
-    # Run the query
-    cursor = connection.execute(query)
-    result = cursor.fetchall()
-
-    return result
+        # Run the query
+        cursor = connection.execute(query)
+        result = cursor.fetchall()
+        
+        logger.debug(f"Query returned {len(result)} records")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error executing BQL query: {e}")
+        raise
 
 
 def parse_amount_filter(amount_str):
@@ -315,6 +337,9 @@ def execute_bql_command_with_click(
     Executes a BQL command with Click arguments, constructing a query, running it,
     and formatting output.
     """
+    logger.debug(f"Executing command: {command_type}")
+    logger.debug(f"Command arguments: {vars(args)}")
+    
     # Process the currency argument
     if hasattr(args, "currency") and args.currency:
         # Split comma-separated currencies and convert to uppercase
@@ -330,12 +355,17 @@ def execute_bql_command_with_click(
     book = get_beancount_file_path()
 
     query = parse_query_func(args)
+    logger.debug(f"Generated BQL query: {query}")
+    
     output = run_bql_query(query, book)
+    logger.debug(f"Raw query results: {len(output)} rows")
 
     # Pass kwargs to format_output_func
     formatted_output = format_output_func(output, args)
+    logger.debug(f"Formatted output: {len(formatted_output)} rows")
 
     if not formatted_output:  # Handle empty output
+        logger.warning("No records found after formatting")
         click.echo("No records found.")
         return
 

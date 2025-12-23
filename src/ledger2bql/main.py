@@ -3,9 +3,11 @@ CLI runner for Ledger2BQL utility.
 """
 
 import sys
+import os
 from importlib.metadata import PackageNotFoundError
 from dotenv import find_dotenv, load_dotenv
 import click
+from .logging_utils import setup_logging, log_environment_info
 
 from .balance import bal_command
 from .register import reg_command
@@ -34,8 +36,9 @@ class AliasedGroup(click.Group):
 
 @click.group(cls=AliasedGroup, invoke_without_command=True)
 @click.option("--version", is_flag=True, help="Show the version and exit.")
+@click.option("--verbose", "-v", is_flag=True, help="Enable verbose debug output.")
 @click.pass_context
-def cli(ctx, version):
+def cli(ctx, version, verbose):
     """Translate Ledger CLI query syntax into BQL"""
     if version:
         try:
@@ -51,6 +54,12 @@ def cli(ctx, version):
     # parent directories.
     dotenv_path = find_dotenv()
     load_dotenv(dotenv_path, override=True)
+
+    # Set up logging if verbose mode is enabled
+    if verbose:
+        logger = setup_logging(verbose=True)
+        log_environment_info()
+        logger.debug("Verbose mode enabled")
 
     # If no subcommand was called, show help
     if ctx.invoked_subcommand is None:
