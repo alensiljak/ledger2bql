@@ -54,7 +54,7 @@ def cli(ctx, version, verbose):
     dotenv_path = find_dotenv()
     load_dotenv(dotenv_path, override=True)
 
-    # Set up logging (always set up, but with different levels based on verbose flag)
+    # Set up logging (only imports loguru if verbose mode is enabled)
     logger = setup_logging(verbose=verbose)
     if verbose:
         log_environment_info()

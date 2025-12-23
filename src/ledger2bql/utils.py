@@ -10,6 +10,7 @@ from tabulate import tabulate
 import click
 from .logging_utils import get_logger
 
+# Use get_logger() which will return a null logger if logging is not enabled
 logger = get_logger(__name__)
 
 
