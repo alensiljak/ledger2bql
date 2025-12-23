@@ -30,6 +30,14 @@ If you run into any complex or far-reaching problems, consult with the developer
 
 There are often problems with adding text to files. In this case, if the retry does not succeed, write the content into a separate, temporary file and notify the user, who will move that generated content into the correct file.
 
+# Run project
+
+While developing, execute the program with 
+
+```sh
+uv run ledger2bql <command>
+```
+
 # Running Python
 
 To run Python scripts, use `uv`:
