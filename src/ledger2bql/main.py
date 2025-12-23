@@ -3,7 +3,6 @@ CLI runner for Ledger2BQL utility.
 """
 
 import sys
-import os
 from importlib.metadata import PackageNotFoundError
 from dotenv import find_dotenv, load_dotenv
 import click
@@ -55,9 +54,9 @@ def cli(ctx, version, verbose):
     dotenv_path = find_dotenv()
     load_dotenv(dotenv_path, override=True)
 
-    # Set up logging if verbose mode is enabled
+    # Set up logging (always set up, but with different levels based on verbose flag)
+    logger = setup_logging(verbose=verbose)
     if verbose:
-        logger = setup_logging(verbose=True)
         log_environment_info()
         logger.debug("Verbose mode enabled")
 

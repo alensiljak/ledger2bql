@@ -49,7 +49,7 @@ Note that changing environment variables happens through modification of the .en
 
 # Tests
 
-To run tests, also run with `uv`:
+To run all tests, also run with `uv`:
 ```sh
 uv run pytest
 ```
@@ -60,4 +60,5 @@ uv run pytest
 
 # Tools
 
-Search for text using ripgrep (rg) tool for performance.
+- Search for text using ripgrep (rg) tool for performance.
+- Check code with `ty` also.
