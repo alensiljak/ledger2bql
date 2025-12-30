@@ -13,6 +13,7 @@ from .register import reg_command
 from .query import query_command
 from .lots import lots_command
 from .assert_command import assert_command
+from .price import price_command
 
 
 class AliasedGroup(click.Group):
@@ -26,7 +27,7 @@ class AliasedGroup(click.Group):
             return rv
 
         # Check for aliases
-        aliases = {"b": "bal", "r": "reg", "q": "query", "l": "lots", "a": "assert"}
+        aliases = {"b": "bal", "r": "reg", "q": "query", "l": "lots", "a": "assert", "p": "price"}
 
         if cmd_name in aliases:
             return click.Group.get_command(self, ctx, aliases[cmd_name])
@@ -83,6 +84,7 @@ cli.add_command(reg_command)
 cli.add_command(query_command)
 cli.add_command(lots_command)
 cli.add_command(assert_command)
+cli.add_command(price_command)
 
 
 def main():
