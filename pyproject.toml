@@ -9,9 +9,10 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "beanquery>=0.2.0",
+    "beancount>=3.2.0",
     "dotenv>=0.9.9",
     "tabulate>=0.9.0",
-    "click>=8.0.0",
+    "click>=8.3.0",
     "loguru>=0.7.0",
 ]
 
@@ -23,7 +24,7 @@ Repository = 'https://github.com/alensiljak/ledger2bql'
 
 [dependency-groups]
 dev = [
-    "pytest>=8.4.2",
+    "pytest>=9.0.0",
 ]
 
 [tool.pytest.ini_options]
