@@ -12,6 +12,7 @@ from .balance import bal_command
 from .register import reg_command
 from .query import query_command
 from .lots import lots_command
+from .assert_command import assert_command
 
 
 class AliasedGroup(click.Group):
@@ -25,7 +26,7 @@ class AliasedGroup(click.Group):
             return rv
 
         # Check for aliases
-        aliases = {"b": "bal", "r": "reg", "q": "query", "l": "lots"}
+        aliases = {"b": "bal", "r": "reg", "q": "query", "l": "lots", "a": "assert"}
 
         if cmd_name in aliases:
             return click.Group.get_command(self, ctx, aliases[cmd_name])
@@ -71,7 +72,7 @@ def cli(ctx, version, verbose):
         click.echo(f"ledger2bql v{v}")
         click.echo(ctx.get_help())
         click.echo(
-            "\nNote: 'b' is an alias for 'bal', 'r' is an alias for 'reg', 'q' is an alias for 'query', and 'l' is an alias for 'lots'"
+            "\nNote: 'b' is an alias for 'bal', 'r' is an alias for 'reg', 'q' is an alias for 'query', 'l' is an alias for 'lots', and 'a' is an alias for 'assert'"
         )
         click.echo(
             "You can call any command with '--help' to get the list of available parameters and options."
@@ -84,6 +85,7 @@ cli.add_command(bal_command)
 cli.add_command(reg_command)
 cli.add_command(query_command)
 cli.add_command(lots_command)
+cli.add_command(assert_command)
 
 
 def main():

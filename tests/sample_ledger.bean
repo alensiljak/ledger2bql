@@ -95,3 +95,7 @@ plugin "beancount.plugins.implicit_prices"
 2025-09-10 txn "Sell some stock" "split lot"
   Equity:Stocks -3 ABC { 1.30 EUR, 2025-04-02 } @ 1.35 EUR
   Assets:Bank:Checking
+
+2025-11-07 balance Assets:Bank:Checking  595.47 EUR
+2025-11-08 balance Assets:Bank:Savings  5775.09 EUR
+2025-11-09 balance Assets:Cash:Pocket-Money  0.00 EUR
