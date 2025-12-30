@@ -15,7 +15,7 @@ from .utils import (
 )
 
 
-@click.command(name="lots", short_help="Show investment lots")
+@click.command(name="lots", short_help="[l] Show investment lots")
 @click.option(
     "--sort-by",
     "-s",

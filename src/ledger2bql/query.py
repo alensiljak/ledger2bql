@@ -8,7 +8,7 @@ import beancount.core.data
 from .utils import get_beancount_file_path, execute_bql_command_with_click
 
 
-@click.command(name="query", short_help="Execute a named query from the ledger")
+@click.command(name="query", short_help="[q] Execute a named query from the ledger")
 @click.argument("query_name")
 @click.option("--no-pager", is_flag=True, help="Disable automatic paging of output.")
 def query_command(query_name, no_pager):

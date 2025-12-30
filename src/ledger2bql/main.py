@@ -72,10 +72,7 @@ def cli(ctx, version, verbose):
         click.echo(f"ledger2bql v{v}")
         click.echo(ctx.get_help())
         click.echo(
-            "\nNote: 'b' is an alias for 'bal', 'r' is an alias for 'reg', 'q' is an alias for 'query', 'l' is an alias for 'lots', and 'a' is an alias for 'assert'"
-        )
-        click.echo(
-            "You can call any command with '--help' to get the list of available parameters and options."
+            "\nYou can call any command with '--help' to get the list of available parameters and options."
         )
         sys.exit(0)
 

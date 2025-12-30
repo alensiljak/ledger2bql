@@ -14,7 +14,7 @@ from .utils import (
 )
 
 
-@click.command(name="assert", short_help="Show balance assertions")
+@click.command(name="assert", short_help="[a] Show balance assertions")
 @click.argument("account_regex", nargs=-1)
 @add_common_click_arguments
 def assert_command(account_regex, **kwargs):

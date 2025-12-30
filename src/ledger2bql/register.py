@@ -16,7 +16,7 @@ from .utils import (
 )
 
 
-@click.command(name="reg", short_help="Show transaction register")
+@click.command(name="reg", short_help="[r] Show transaction register")
 @click.argument("account_regex", nargs=-1)
 @add_common_click_arguments
 @click.pass_context

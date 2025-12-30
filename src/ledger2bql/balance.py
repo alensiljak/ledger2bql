@@ -14,7 +14,7 @@ from .utils import (
 )
 
 
-@click.command(name="bal", short_help="Show account balances")
+@click.command(name="bal", short_help="[b] Show account balances")
 @click.option(
     "--depth",
     "-D",
