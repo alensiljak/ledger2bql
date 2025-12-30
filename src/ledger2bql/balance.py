@@ -30,6 +30,7 @@ from .utils import (
     is_flag=True,
     help="Show hierarchical view with parent accounts aggregated.",
 )
+
 @click.argument("account_regex", nargs=-1)
 @add_common_click_arguments
 def bal_command(account_regex, depth, zero, hierarchy, sort=None, **kwargs):
@@ -99,12 +100,16 @@ def parse_query(args):
 
     # Handle amount filters
     if hasattr(args, "amount") and args.amount:
+        # NEW APPROACH: Don't apply amount filters in the BQL query
+        # Instead, we'll fetch all accounts and filter the aggregated results in Python
+        # This ensures that amount filters are applied to final balances, not individual transactions
+        amount_filters = []
         for amount_filter in args.amount:
             op, val, cur = parse_amount_filter(amount_filter)
-            amount_clause = f"number {op} {val}"
-            if cur:
-                amount_clause += f" AND currency = '{cur}'"
-            where_clauses.append(amount_clause)
+            amount_filters.append((op, val, cur))
+        # Store for use in format_output
+        args.amount_filters = amount_filters
+        # Don't add amount filters to where_clauses - we'll handle them in post-processing
 
     # Handle currency filter
     if hasattr(args, "currency") and args.currency:
@@ -115,6 +120,9 @@ def parse_query(args):
             where_clauses.append(f"currency = '{args.currency}'")
 
     # Build the final query
+
+    
+    # Original logic for building the query
     if hasattr(args, "exchange") and args.exchange:
         # When exchange currency is specified, convert all positions to that currency
         select_clause = f"SELECT account, units(sum(position)) as Balance, convert(sum(position), '{args.exchange}') as Converted"
@@ -157,6 +165,69 @@ def format_output(output: list, args) -> list:
     # Initialize grand total dictionary to accumulate balances by currency
     grand_total = {}
     converted_total = 0
+
+    # Apply amount filters to the aggregated results if present
+    if hasattr(args, "amount_filters") and args.amount_filters:
+        filtered_output = []
+        for row in output:
+            if not row:
+                continue
+            
+            # Get the balance inventory (last column for non-exchange, second-to-last for exchange)
+            if hasattr(args, "exchange") and args.exchange:
+                balance_inventory = row[1]  # Balance column
+            else:
+                balance_inventory = row[-1]  # Last column
+            
+            # Check if this account meets all amount filter criteria
+            meets_all_filters = True
+            for op, val, cur in args.amount_filters:
+                filter_met = False
+                
+                # Check each currency position in the balance
+                for currency, amount in balance_inventory.items():
+                    # Extract currency string
+                    if isinstance(currency, tuple):
+                        currency_str = currency[0]
+                    else:
+                        currency_str = currency
+                    
+                    # Extract number
+                    number = amount.units.number
+                    
+
+                    
+                    # Check if currency matches (if specified)
+                    if cur and currency_str != cur:
+                        continue
+                    
+                    # Check the amount condition
+                    if op == ">" and number > val:
+                        filter_met = True
+                        break
+                    elif op == ">=" and number >= val:
+                        filter_met = True
+                        break
+                    elif op == "<" and number < val:
+                        filter_met = True
+                        break
+                    elif op == "<=" and number <= val:
+                        filter_met = True
+                        break
+                    elif op == "=" and number == val:
+                        filter_met = True
+                        break
+                
+
+                
+                if not filter_met:
+                    meets_all_filters = False
+                    break
+            
+            if meets_all_filters:
+                filtered_output.append(row)
+        
+        output = filtered_output
 
     # Handle hierarchical view if requested
     if hasattr(args, "hierarchy") and args.hierarchy:

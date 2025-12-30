@@ -195,6 +195,8 @@ def test_bal_filter_by_amount_gt():
     # Act
     result = run_bal_command(["--amount", ">50"])
 
+
+
     # Assert
     assert result.exit_code == 0
     table_lines = extract_table_data(result.output.splitlines())
@@ -203,5 +205,7 @@ def test_bal_filter_by_amount_gt():
     assert "Expenses:Food" in table_output
     assert "100.00 EUR" in table_output
     assert "Assets:Bank:Checking" in table_output
-    assert "2,000.00 EUR" in table_output
+    assert "1,369.80 EUR" in table_output  # Correct final balance, not the buggy 2,000.00 EUR
+    assert "Assets:Bank:Savings" in table_output
+    assert "500.00 EUR" in table_output
     assert "Expenses:Sweets" not in table_output
