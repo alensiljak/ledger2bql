@@ -289,12 +289,15 @@ l a --begin 2025-11-01
 
 # Filter by amount
 l a --amount >500
+l a -a >500  # shorthand
 
 # Filter by currency
 l a --currency EUR
+l a -c EUR  # shorthand
 
 # Combine multiple filters
 l a Assets:Bank --amount >500 --currency EUR
+l a Assets:Bank -a >500 -c EUR  # using shorthands
 ```
 
 ### Sorting and Limiting

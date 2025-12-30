@@ -65,6 +65,17 @@ def test_assert_currency_filter():
     assert "5,775.09 EUR" in result.output
 
 
+def test_assert_currency_filter_shorthand():
+    """Test assert command with currency filtering using shorthand -c."""
+    runner = CliRunner()
+    result = runner.invoke(cli, ['assert', '-c', 'EUR'])
+    
+    assert result.exit_code == 0
+    assert "amount.currency = 'EUR'" in result.output
+    assert "595.47 EUR" in result.output
+    assert "5,775.09 EUR" in result.output
+
+
 def test_assert_amount_filter():
     """Test assert command with amount filtering."""
     runner = CliRunner()
