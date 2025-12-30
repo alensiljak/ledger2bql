@@ -33,6 +33,7 @@ For convenience, you can use a `l.cmd` as a shortcut for ledger2bql. See the act
 The commands support short aliases:
 - `bal` can be shortened to `b`
 - `reg` can be shortened to `r`
+- `assert` can be shortened to `a`
 
 Run
 ```sh
@@ -252,6 +253,91 @@ l q holi
 ```
 
 This is useful when you have long query names but want to use shorter aliases to execute them.
+
+## Assert
+
+The assert command shows balance assertions from your Beancount file. Balance assertions are statements that confirm the expected balance of an account on a specific date, helping you verify the accuracy of your financial records.
+
+Running
+```sh
+l a
+```
+will output
+```
+Your BQL query is:
+SELECT date, account, amount FROM #balances
+
++------------+--------------------------+--------------+
+| Date       | Account                  |      Balance |
+|------------+--------------------------+--------------|
+| 2025-11-07 | Assets:Bank:Checking     |   595.47 EUR |
+| 2025-11-08 | Assets:Bank:Savings      | 5,775.09 EUR |
+| 2025-11-07 | Assets:Cash:Pocket-Money |     0.00 EUR |
++------------+--------------------------+--------------+
+```
+
+### Filtering Assertions
+
+The assert command supports the same filtering options as other commands:
+
+```sh
+# Filter by account name
+l a Assets:Bank
+
+# Filter by date range
+l a --begin 2025-11-01
+
+# Filter by amount
+l a --amount >500
+
+# Filter by currency
+l a --currency EUR
+
+# Combine multiple filters
+l a Assets:Bank --amount >500 --currency EUR
+```
+
+### Sorting and Limiting
+
+You can sort and limit the results:
+
+```sh
+# Sort by account name
+l a --sort account
+
+# Sort by date (descending)
+l a --sort -date
+
+# Limit to 10 results
+l a --limit 10
+```
+
+### Excluding Accounts
+
+Use the `not` keyword to exclude certain accounts:
+
+```sh
+# Show all assertions except cash accounts
+l a not Assets:Cash
+
+# Show bank assertions excluding savings
+l a Assets:Bank not Savings
+```
+
+### Advanced Account Filtering
+
+The assert command supports the same advanced account filtering syntax:
+
+```sh
+# Accounts starting with Assets:Bank
+l a ^Assets:Bank
+
+# Accounts ending with Checking
+l a Checking$
+
+# Exact account match
+l a ^Assets:Bank:Checking$
+```
 
 ## Lots
 
